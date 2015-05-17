@@ -1,0 +1,15 @@
+target/*
+.settings/*
+.classpath
+.project
+.idea
+*.iml
+**/target
+**/build/
+.DS_Store
+**/.gradle
+**/gradle/
+gradlew.bat
+**/gradlew
+**/out/
+**/*/target
