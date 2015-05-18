@@ -28,8 +28,8 @@ public class Main {
 
         //clean previous work
         if (CLEAN_PREVIOUS) {
-            ngramRepository.deleteAll();
             tokenRepository.deleteAll();
+            ngramRepository.deleteAll();
             String text = ngramService.loadFile("a.txt");
             ngramService.buildNgram(text, NGRAM);
         }
