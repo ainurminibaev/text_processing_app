@@ -14,9 +14,8 @@ import pack.service.NgramService;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.text.BreakIterator;
+import java.util.*;
 
 /**
  * Created by ainurminibaev on 12.05.15.
@@ -24,8 +23,8 @@ import java.util.List;
 @Service
 public class NgramServiceImpl implements NgramService {
 
-    public static final String START_FLAG = "<s>";
-    private static final String END_FLAG = "</s>";
+    public static final String START_FLAG = " <s> ";
+    private static final String END_FLAG = " </s> ";
     @Autowired
     NgramRepository ngramRepository;
     @Autowired
@@ -41,8 +40,32 @@ public class NgramServiceImpl implements NgramService {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = null;
             StringBuilder textBuilder = new StringBuilder();
+            BreakIterator sentenceIterator =
+                    BreakIterator.getSentenceInstance(Locale.ENGLISH);
             while ((line = reader.readLine()) != null) {
-                textBuilder.append(line);
+                boolean isStartFlag = true;
+                sentenceIterator.setText(line);
+                int flagIndex = sentenceIterator.current();
+                Map<Integer, Boolean> insertMap = new HashMap<>();
+                while (flagIndex != -1) {
+                    if (isStartFlag) {
+                        insertMap.put(flagIndex, isStartFlag);
+                        isStartFlag = false;
+                    } else {
+                        insertMap.put(flagIndex - 1, isStartFlag);
+                        isStartFlag = true;
+                    }
+                    flagIndex = sentenceIterator.next();
+                }
+                StringBuilder str = new StringBuilder(line.length());
+                for (int i = 0; i < line.length(); i++) {
+                    if (insertMap.containsKey(i)) {
+                        Boolean isStart = insertMap.get(i);
+                        str.append(isStart ? START_FLAG : END_FLAG);
+                    }
+                    str.append(line.charAt(i));
+                }
+                textBuilder.append(str.toString());
                 textBuilder.append('\n');
             }
             return textBuilder.toString();
@@ -56,26 +79,27 @@ public class NgramServiceImpl implements NgramService {
     public void buildNgram(String text, int ngramSize) {
         //TODO  [\\s,;\\n\\t]+
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
-        for (int i = 0; i < wordsList.size(); i++) {
-            int currentIndex = i;
-            String token = wordsList.get(currentIndex);
-            if (hasStartFlag(token)) {
-                wordsList.add(currentIndex, START_FLAG);
-                currentIndex++;
-            }
-            if (hasEndFlag(token)) {
-                if (currentIndex + 1 >= wordsList.size()) {
-                    wordsList.add(END_FLAG);
-                    break;
-                } else {
-                    wordsList.add(currentIndex + 1, END_FLAG);
-                }
-                currentIndex++;
-            }
-            wordsList.remove(currentIndex);
-            i = currentIndex;
-            wordsList.add(currentIndex, token.replaceAll("[^\\w]", ""));
-        }
+//        for (int i = 0; i < wordsList.size(); i++) {
+//            int currentIndex = i;
+//            String token = wordsList.get(currentIndex);
+//            if (hasStartFlag(token)) {
+//                wordsList.add(currentIndex, START_FLAG);
+//                currentIndex++;
+//            }
+//            if (hasEndFlag(token)) {
+//                if (currentIndex + 1 >= wordsList.size()) {
+//                    wordsList.add(END_FLAG);
+//                    break;
+//                } else {
+//                    wordsList.add(currentIndex + 1, END_FLAG);
+//                }
+//                currentIndex++;
+//            }
+//            wordsList.remove(currentIndex);
+//            i = currentIndex;
+//            wordsList.add(currentIndex, token.replaceAll("[^\\w]", ""));
+//        }
+//TODO clean symbols except ,
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
