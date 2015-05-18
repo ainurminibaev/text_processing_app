@@ -3,6 +3,7 @@ package pack;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import pack.config.*;
 import pack.repository.NgramRepository;
+import pack.repository.TokenRepository;
 import pack.service.NgramService;
 import pack.service.Replacer;
 import pack.service.SentenceBuilder;
@@ -14,19 +15,21 @@ import java.io.FileNotFoundException;
  */
 public class Main {
 
-    public static final int NGRAM = 2;
-    public static final boolean CLEAN_PREVIOUS = true;
+    public static final int NGRAM = 3;
+    public static final boolean CLEAN_PREVIOUS = false;
 
     public static void main(String[] args) throws FileNotFoundException {
         //define context
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, DataSourceConfig.class, PersistenceConfig.class, CachingConfig.class);
-        NgramRepository repository = context.getBean(NgramRepository.class);
+        NgramRepository ngramRepository = context.getBean(NgramRepository.class);
+        TokenRepository tokenRepository = context.getBean(TokenRepository.class);
         NgramService ngramService = context.getBean(NgramService.class);
         SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
 
         //clean previous work
         if (CLEAN_PREVIOUS) {
-            repository.deleteAll();
+            ngramRepository.deleteAll();
+            tokenRepository.deleteAll();
             String text = ngramService.loadFile("a.txt");
             ngramService.buildNgram(text, NGRAM);
         }

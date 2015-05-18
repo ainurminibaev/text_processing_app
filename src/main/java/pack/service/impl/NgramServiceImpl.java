@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import pack.model.Ngram;
 import pack.model.Token;
 import pack.repository.NgramRepository;
+import pack.repository.TokenRepository;
 import pack.service.NgramService;
 
 import java.io.BufferedReader;
@@ -24,6 +25,8 @@ public class NgramServiceImpl implements NgramService {
 
     @Autowired
     NgramRepository ngramRepository;
+    @Autowired
+    TokenRepository tokenRepository;
 
     /**
      * Распарсить текст из файла так, чтобы разбить на Ngram
@@ -48,7 +51,6 @@ public class NgramServiceImpl implements NgramService {
 
     @Override
     public void buildNgram(String text, int ngramSize) {
-        List<Ngram> ngrams = new ArrayList<>();
         //TODO
         String[] words = text.split("[\\s\\.]+");
         HashSet<String> wordsSet = Sets.newHashSet(words);
@@ -60,15 +62,17 @@ public class NgramServiceImpl implements NgramService {
             List<Token> tokens = new ArrayList<>();
             Token t;
             for (int j = 0; j < ngramSize; j++) {
-                t = new Token();
                 String word = words[i + j];
-                t.setToken(word);
-                t.setNgram(ngram);
+                t = tokenRepository.findOneByToken(word);
+                if (t == null) {
+                    t = new Token();
+                    t.setToken(word);
+                    tokenRepository.save(t);
+                }
                 tokens.add(t);
             }
             ngram.setTokenList(tokens);
             ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
-            ngrams.add(ngram);
             ngramRepository.save(ngram);
         }
     }
