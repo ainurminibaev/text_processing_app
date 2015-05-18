@@ -1,5 +1,6 @@
 package pack.service.impl;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,6 +24,8 @@ import java.util.List;
 @Service
 public class NgramServiceImpl implements NgramService {
 
+    public static final String START_FLAG = "<s>";
+    private static final String END_FLAG = "</s>";
     @Autowired
     NgramRepository ngramRepository;
     @Autowired
@@ -37,11 +40,11 @@ public class NgramServiceImpl implements NgramService {
     public String loadFile(String file) throws FileNotFoundException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = null;
-            StringBuilder textBuilder = new StringBuilder("<s> ");
+            StringBuilder textBuilder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 textBuilder.append(line);
+                textBuilder.append('\n');
             }
-            textBuilder.append(" </s>");
             return textBuilder.toString();
         } catch (Exception ignored) {
             ignored.printStackTrace();
@@ -51,8 +54,30 @@ public class NgramServiceImpl implements NgramService {
 
     @Override
     public void buildNgram(String text, int ngramSize) {
-        //TODO
-        String[] words = text.split("[\\s\\.]+");
+        //TODO  [\\s,;\\n\\t]+
+        ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
+        for (int i = 0; i < wordsList.size(); i++) {
+            int currentIndex = i;
+            String token = wordsList.get(currentIndex);
+            if (hasStartFlag(token)) {
+                wordsList.add(currentIndex, START_FLAG);
+                currentIndex++;
+            }
+            if (hasEndFlag(token)) {
+                if (currentIndex + 1 >= wordsList.size()) {
+                    wordsList.add(END_FLAG);
+                    break;
+                } else {
+                    wordsList.add(currentIndex + 1, END_FLAG);
+                }
+                currentIndex++;
+            }
+            wordsList.remove(currentIndex);
+            i = currentIndex;
+            wordsList.add(currentIndex, token.replaceAll("[^\\w]", ""));
+        }
+        String[] words = new String[wordsList.size()];
+        wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
         if (words.length < ngramSize) {
             return;
@@ -75,6 +100,16 @@ public class NgramServiceImpl implements NgramService {
             ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
             ngramRepository.save(ngram);
         }
+    }
+
+    private boolean hasEndFlag(String token) {
+        token = token.replaceAll(" ", "");
+        return token.indexOf(token.length() - 1) == '.';
+    }
+
+    private boolean hasStartFlag(String token) {
+        token = token.replaceAll(" ", "");
+        return Character.isUpperCase(token.charAt(0));
     }
 
     /**
