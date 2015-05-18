@@ -63,22 +63,20 @@ public class NgramServiceImpl implements NgramService {
         //TODO  [\\s,;\\n\\t]+
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
         for (int i = 0; i < wordsList.size(); i++) {
-            int currentIndex = i;
-            String token = wordsList.get(currentIndex);
+            String token = wordsList.get(i);
             //пропускаем признаки старта и конца
             if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
                 continue;
             }
             //удаляем старое слово, чтобы слова вставить
-            wordsList.remove(currentIndex);
+            wordsList.remove(i);
             if (token.trim().length() == 0) {
                 //пропускаем слова-пустышки
                 i--;
                 continue;
             }
-            i = currentIndex;
             //избавляемся от всего, кроме букв и запятых
-            wordsList.add(currentIndex, token.replaceAll("[^\\w,]", ""));
+            wordsList.add(i, token.replaceAll("[^\\w,]", ""));
         }
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
