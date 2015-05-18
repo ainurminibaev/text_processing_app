@@ -91,7 +91,7 @@ public class NgramServiceImpl implements NgramService {
             boolean canBeNgram = true;
             for (int j = 0; j < ngramSize; j++) {
                 String word = words[i + j];
-                if ((word.equals(START_FLAG) && j != 0) || (word.equals(END_FLAG) && j != ngramSize - 1)) {
+                if ((word.equals(Constants.START_FLAG) && j != 0) || (word.equals(Constants.END_FLAG) && j != ngramSize - 1)) {
                     canBeNgram = false;
                     break;
                 }
