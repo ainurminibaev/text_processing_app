@@ -1,5 +1,8 @@
 package pack;
 
+import java.text.BreakIterator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -17,5 +20,49 @@ public class Util {
             ar[index] = ar[i];
             ar[i] = a;
         }
+    }
+
+
+    public static Map<Integer, Boolean> getStartEndMappings(String line, BreakIterator sentenceIterator) {
+        boolean isStartFlag = true;
+        sentenceIterator.setText(line);
+        int flagIndex = sentenceIterator.current();
+        Map<Integer, Boolean> insertMap = new HashMap<>();
+        while (flagIndex != -1) {
+            if (isStartFlag) {
+                insertMap.put(flagIndex, true);
+                isStartFlag = false;
+            } else {
+                insertMap.put(flagIndex, false);
+                isStartFlag = true;
+            }
+            flagIndex = sentenceIterator.next();
+        }
+        return insertMap;
+    }
+
+
+    public static String getMarkedLine(String line, BreakIterator sentenceIterator) {
+        Map<Integer, Boolean> insertMap = getStartEndMappings(line, sentenceIterator);
+        StringBuilder str = new StringBuilder(line.length());
+        boolean isFirstOccurance = true;
+        for (int i = 0; i < line.length(); i++) {
+            if (insertMap.containsKey(i)) {
+                Boolean isStart = insertMap.get(i);
+                if (!isFirstOccurance || (insertMap.size() != 1 && !isFirstOccurance)) {
+                    str.append(Constants.START_END_FLAG);
+                } else {
+                    str.append(isStart ? Constants.START_FLAG : Constants.END_FLAG);
+                }
+                isFirstOccurance = false;
+                insertMap.remove(i);
+            }
+            str.append(line.charAt(i));
+        }
+        for (Map.Entry<Integer, Boolean> e : insertMap.entrySet()) {
+            str.append(e.getValue() ? Constants.START_FLAG : Constants.END_FLAG);
+        }
+        return str.toString();
+
     }
 }

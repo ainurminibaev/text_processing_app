@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import pack.Util;
 import pack.model.Ngram;
 import pack.model.Token;
 import pack.repository.NgramRepository;
@@ -40,32 +41,12 @@ public class NgramServiceImpl implements NgramService {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = null;
             StringBuilder textBuilder = new StringBuilder();
-            BreakIterator sentenceIterator =
-                    BreakIterator.getSentenceInstance(Locale.ENGLISH);
+            BreakIterator sentenceIterator = BreakIterator.getSentenceInstance(Locale.ENGLISH);
             while ((line = reader.readLine()) != null) {
-                boolean isStartFlag = true;
-                sentenceIterator.setText(line);
-                int flagIndex = sentenceIterator.current();
-                Map<Integer, Boolean> insertMap = new HashMap<>();
-                while (flagIndex != -1) {
-                    if (isStartFlag) {
-                        insertMap.put(flagIndex, isStartFlag);
-                        isStartFlag = false;
-                    } else {
-                        insertMap.put(flagIndex - 1, isStartFlag);
-                        isStartFlag = true;
-                    }
-                    flagIndex = sentenceIterator.next();
+                if (line.trim().length() == 0) {
+                    continue;
                 }
-                StringBuilder str = new StringBuilder(line.length());
-                for (int i = 0; i < line.length(); i++) {
-                    if (insertMap.containsKey(i)) {
-                        Boolean isStart = insertMap.get(i);
-                        str.append(isStart ? START_FLAG : END_FLAG);
-                    }
-                    str.append(line.charAt(i));
-                }
-                textBuilder.append(str.toString());
+                textBuilder.append(Util.getMarkedLine(line, sentenceIterator));
                 textBuilder.append('\n');
             }
             return textBuilder.toString();
@@ -74,6 +55,7 @@ public class NgramServiceImpl implements NgramService {
         }
         return "";
     }
+
 
     @Override
     public void buildNgram(String text, int ngramSize) {
