@@ -1,5 +1,6 @@
 package pack.service.impl;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,68 @@ public class SentenceBuilderImpl implements SentenceBuilder {
         }
 
         return getSentenceFromNgram(generatedSentence, HashMultiset.create(wordsList));
+    }
+
+    @Override
+    @Transactional
+    public String buildRandomSentence(int n) {
+        if (n < 2) throw new RuntimeException("n should be >= 2");
+        Ngram random = ngramRepository.randomNgramByNgramSize(n);
+        StringBuilder text = new StringBuilder();
+        addNgramStringBuilder(random, text);
+        text.append(buildSentenceFromFirstNgram(random));
+        return text.toString();
+    }
+
+    private String buildSentenceFromFirstNgram(Ngram random) {
+        final List<Token> tokens = random.getTokenList();
+        Set<Ngram> ngramSet = Sets.filter(tokens.get(1).getNgramSet(), new Predicate<Ngram>() {
+            @Override
+            public boolean apply(Ngram ngram) {
+                return ngram.getTokenList().get(0).getToken().equals(tokens.get(1).getToken());
+            }
+        });
+        for (int i = 2; i < tokens.size(); i++) {
+            final int finalI = i;
+            ngramSet = Sets.intersection(ngramSet, Sets.filter(tokens.get(i).getNgramSet(), new Predicate<Ngram>() {
+                @Override
+                public boolean apply(Ngram ngram) {
+                    return ngram.getTokenList().get(finalI - 1).getToken().equals(tokens.get(finalI).getToken());
+                }
+            }));
+        }
+        Ngram[] ngrams = ngramSet.toArray(new Ngram[ngramSet.size()]);
+        Arrays.sort(ngrams, Ngram.BY_PROBABILITY_DESC_COMPARATOR);
+        Random randomer = new Random();
+        double total = totalPropability(ngrams);
+        double probability = randomer.nextDouble() % total;
+        double sum = 0;
+        for (Ngram ngram: ngrams) {
+            if (probability < sum + ngram.getProbability()) {
+                StringBuilder text = new StringBuilder();
+                text.append(ngram.getTokenList().get(ngram.getTokenList().size() - 1)).append(" ");
+                return text.append(buildSentenceFromFirstNgram(ngram)).toString();
+            }
+            else {
+                sum += ngram.getProbability();
+            }
+        }
+        //нграмы кончились - предложению конец
+        return "";
+    }
+
+    private double totalPropability(Ngram[] ngrams) {
+        double total = 0;
+        for (Ngram ngram: ngrams){
+            total += ngram.getProbability();
+        }
+        return total;
+    }
+
+    private void addNgramStringBuilder(Ngram random, StringBuilder text) {
+        for (Token token: random.getTokenList()) {
+            text.append(token.getToken()).append(" ");
+        }
     }
 
     /**
