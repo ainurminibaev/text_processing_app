@@ -60,23 +60,7 @@ public class NgramServiceImpl implements NgramService {
     public void buildNgram(String text, int ngramSize) {
         //TODO  [\\s,;\\n\\t]+
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
-        for (int i = 0; i < wordsList.size(); i++) {
-            String token = wordsList.get(i);
-            //пропускаем признаки старта и конца
-            if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
-                continue;
-            }
-            //удаляем старое слово, чтобы слова вставить
-            wordsList.remove(i);
-            token = token.replaceAll("[^\\w,]", "");
-            if (token.trim().length() == 0) {
-                //пропускаем слова-пустышки
-                i--;
-                continue;
-            }
-            //избавляемся от всего, кроме букв и запятых
-            wordsList.add(i, token);
-        }
+        cleanWordSetFromTrunk(wordsList);
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
@@ -117,6 +101,30 @@ public class NgramServiceImpl implements NgramService {
             }
         }
         System.out.println("All words have been parsed!");
+    }
+
+    /**
+     * Избавляемся от пустышек, символов
+     * @param wordsList
+     */
+    private void cleanWordSetFromTrunk(ArrayList<String> wordsList) {
+        for (int i = 0; i < wordsList.size(); i++) {
+            String token = wordsList.get(i);
+            //пропускаем признаки старта и конца
+            if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
+                continue;
+            }
+            //удаляем старое слово, чтобы слова вставить
+            wordsList.remove(i);
+            token = token.replaceAll("[^\\w,]", "");
+            if (token.trim().length() == 0) {
+                //пропускаем слова-пустышки
+                i--;
+                continue;
+            }
+            //избавляемся от всего, кроме букв и запятых
+            wordsList.add(i, token);
+        }
     }
 
     private boolean hasEndFlag(String token) {
