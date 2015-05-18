@@ -23,6 +23,12 @@ public class Util {
     }
 
 
+    /**
+     * Выделяет места, куда нужно вставить признак начала/конца
+     * Начало - True
+     * Конец - False
+     * @return
+     */
     public static Map<Integer, Boolean> getStartEndMappings(String line, BreakIterator sentenceIterator) {
         boolean isStartFlag = true;
         sentenceIterator.setText(line);
@@ -42,6 +48,10 @@ public class Util {
     }
 
 
+    /**
+     * Вставляет признаки начала и конца
+     * @return
+     */
     public static String getMarkedLine(String line, BreakIterator sentenceIterator) {
         Map<Integer, Boolean> insertMap = getStartEndMappings(line, sentenceIterator);
         StringBuilder str = new StringBuilder(line.length());
