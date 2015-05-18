@@ -1,7 +1,10 @@
 package pack;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import pack.config.*;
+import pack.config.CachingConfig;
+import pack.config.CoreConfig;
+import pack.config.DataSourceConfig;
+import pack.config.PersistenceConfig;
 import pack.repository.NgramRepository;
 import pack.repository.TokenRepository;
 import pack.service.NgramService;
@@ -11,9 +14,9 @@ import pack.service.SentenceBuilder;
 import java.io.FileNotFoundException;
 
 /**
- * Created by ainurminibaev on 12.05.15.
+ * Created by giylmi on 18.05.2015.
  */
-public class Main {
+public class GenerateSentenceTest {
 
     public static final int NGRAM = 3;
 
@@ -25,17 +28,6 @@ public class Main {
         NgramService ngramService = context.getBean(NgramService.class);
         SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
 
-        String[] words = "my best video pile".split("\\s");
-        Util.shuffleArray(words);
-        for (int i = 0; i < words.length; i++) {
-            String word = words[i];
-            System.out.print(word + " ");
-        }
-        System.out.println();
-        String sentence = sentenceBuilder.buildSentence(words, NGRAM);
-        System.out.println(sentence);
-
-        Replacer replacer = context.getBean(Replacer.class);
-        replacer.replace("broke up into ? masses", NGRAM);
+        System.out.println(sentenceBuilder.buildRandomSentence(NGRAM));
     }
 }
