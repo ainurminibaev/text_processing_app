@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pack.model.Ngram;
 import pack.model.Token;
 import pack.repository.NgramRepository;
+import pack.service.NgramService;
 import pack.service.SentenceBuilder;
 
 import java.util.*;
@@ -66,6 +67,9 @@ public class SentenceBuilderImpl implements SentenceBuilder {
     public String buildRandomSentence(int n) {
         if (n < 2) throw new RuntimeException("n should be >= 2");
         Ngram random = ngramRepository.randomNgramByNgramSize(n);
+        while (random == null || !random.getTokenList().get(0).getToken().equals(NgramService.START_FLAG)) {
+            random = ngramRepository.randomNgramByNgramSize(n);
+        }
         StringBuilder text = new StringBuilder();
         addNgramStringBuilder(random, text);
         text.append(buildSentenceFromFirstNgram(random));

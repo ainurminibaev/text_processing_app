@@ -23,8 +23,6 @@ import java.util.*;
 @Service
 public class NgramServiceImpl implements NgramService {
 
-    public static final String START_FLAG = " <s> ";
-    private static final String END_FLAG = " </s> ";
     @Autowired
     NgramRepository ngramRepository;
     @Autowired
@@ -61,13 +59,16 @@ public class NgramServiceImpl implements NgramService {
                 for (int i = 0; i < line.length(); i++) {
                     if (insertMap.containsKey(i)) {
                         Boolean isStart = insertMap.get(i);
-                        str.append(isStart ? START_FLAG : END_FLAG);
+                        str.append(" ").append(isStart ? START_FLAG : END_FLAG).append(" ");
+                        if (isStart) str.append(line.charAt(i));
+                    } else {
+                        str.append(line.charAt(i));
                     }
-                    str.append(line.charAt(i));
                 }
                 textBuilder.append(str.toString());
                 textBuilder.append('\n');
             }
+            textBuilder.append(" </s>");
             return textBuilder.toString();
         } catch (Exception ignored) {
             ignored.printStackTrace();
@@ -106,24 +107,40 @@ public class NgramServiceImpl implements NgramService {
         if (words.length < ngramSize) {
             return;
         }
+        int p = 0;
         for (int i = 0; i < words.length - ngramSize + 1; i++) {
             Ngram ngram = new Ngram(ngramSize);
             List<Token> tokens = new ArrayList<>();
             Token t;
+            boolean canBeNgram = true;
             for (int j = 0; j < ngramSize; j++) {
                 String word = words[i + j];
+                if ((word.equals(START_FLAG) && j != 0) || (word.equals(END_FLAG) && j != ngramSize - 1)) {
+                    canBeNgram = false;
+                    break;
+                }
                 t = tokenRepository.findOneByToken(word);
                 if (t == null) {
                     t = new Token();
                     t.setToken(word);
-                    tokenRepository.save(t);
                 }
                 tokens.add(t);
             }
-            ngram.setTokenList(tokens);
-            ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
-            ngramRepository.save(ngram);
+            if (canBeNgram) {
+                for (Token token: tokens){
+                    tokenRepository.save(token);
+                }
+                ngram.setTokenList(tokens);
+                ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
+                ngramRepository.save(ngram);
+            }
+
+            if (i * 100.0 / words.length - p > 10) {
+                System.out.println(i * 100.0 / words.length + " words have been parsed");
+                p = (int)(i * 100.0 / words.length);
+            }
         }
+        System.out.println("All words have been parsed!");
     }
 
     private boolean hasEndFlag(String token) {
