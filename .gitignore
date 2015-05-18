@@ -13,4 +13,4 @@ gradlew.bat
 **/gradlew
 **/out/
 **/*/target
-*.origin
+*.properties

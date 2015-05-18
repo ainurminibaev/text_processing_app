@@ -31,6 +31,7 @@ public class ReplacerImpl implements Replacer {
                 List<Ngram> bestNgrams = findBestMatchedNgram(ngrams, ngramSize);
                 System.out.println("missing word with index = " + i + " can be replaced with(sorted):");
                 Set<Ngram> bestSet = new HashSet<>(bestNgrams);
+                //TODO сет работает неправильно, несколько вхождений the
                 bestNgrams = Lists.newArrayList(bestSet);
                 sortNgrams(bestNgrams);
 
@@ -75,6 +76,10 @@ public class ReplacerImpl implements Replacer {
         return true;
     }
 
+    /**
+     * Создать все ngram's размера ngramSize в котором участвует пропущенное слово
+     * @return
+     */
     private List<Ngram> buildAllNGrams(String[] words, int skipIndex, int ngramSize) {
         int startPos = skipIndex - ngramSize + 1;
 

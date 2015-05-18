@@ -15,7 +15,7 @@ import java.io.FileNotFoundException;
 public class Main {
 
     public static final int NGRAM = 2;
-    public static final boolean CLEAN_PREVIOUS = false;
+    public static final boolean CLEAN_PREVIOUS = true;
 
     public static void main(String[] args) throws FileNotFoundException {
         //define context
