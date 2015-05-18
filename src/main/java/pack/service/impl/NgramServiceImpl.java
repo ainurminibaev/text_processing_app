@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import pack.Constants;
 import pack.Util;
 import pack.model.Ngram;
 import pack.model.Token;
@@ -61,27 +62,24 @@ public class NgramServiceImpl implements NgramService {
     public void buildNgram(String text, int ngramSize) {
         //TODO  [\\s,;\\n\\t]+
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
-//        for (int i = 0; i < wordsList.size(); i++) {
-//            int currentIndex = i;
-//            String token = wordsList.get(currentIndex);
-//            if (hasStartFlag(token)) {
-//                wordsList.add(currentIndex, START_FLAG);
-//                currentIndex++;
-//            }
-//            if (hasEndFlag(token)) {
-//                if (currentIndex + 1 >= wordsList.size()) {
-//                    wordsList.add(END_FLAG);
-//                    break;
-//                } else {
-//                    wordsList.add(currentIndex + 1, END_FLAG);
-//                }
-//                currentIndex++;
-//            }
-//            wordsList.remove(currentIndex);
-//            i = currentIndex;
-//            wordsList.add(currentIndex, token.replaceAll("[^\\w]", ""));
-//        }
-//TODO clean symbols except ,
+        for (int i = 0; i < wordsList.size(); i++) {
+            int currentIndex = i;
+            String token = wordsList.get(currentIndex);
+            //пропускаем признаки старта и конца
+            if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
+                continue;
+            }
+            //удаляем старое слово, чтобы слова вставить
+            wordsList.remove(currentIndex);
+            if (token.trim().length() == 0) {
+                //пропускаем слова-пустышки
+                i--;
+                continue;
+            }
+            i = currentIndex;
+            //избавляемся от всего, кроме букв и запятых
+            wordsList.add(currentIndex, token.replaceAll("[^\\w,]", ""));
+        }
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
