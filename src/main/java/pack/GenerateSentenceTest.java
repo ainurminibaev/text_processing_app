@@ -19,7 +19,6 @@ import java.io.FileNotFoundException;
 public class GenerateSentenceTest {
 
     public static final int NGRAM = 3;
-    public static final boolean CLEAN_PREVIOUS = false;
 
     public static void main(String[] args) throws FileNotFoundException {
         //define context
@@ -29,13 +28,6 @@ public class GenerateSentenceTest {
         NgramService ngramService = context.getBean(NgramService.class);
         SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
 
-        //clean previous work
-        if (CLEAN_PREVIOUS) {
-            ngramRepository.deleteAll();
-            tokenRepository.deleteAll();
-            String text = ngramService.loadFile("a.txt");
-            ngramService.buildNgram(text, NGRAM);
-        }
-        sentenceBuilder.buildRandomSentence(NGRAM);
+        System.out.println(sentenceBuilder.buildRandomSentence(NGRAM));
     }
 }
