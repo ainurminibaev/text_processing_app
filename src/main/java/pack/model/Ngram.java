@@ -1,5 +1,6 @@
 package pack.model;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import javax.persistence.*;
@@ -65,14 +66,24 @@ public class Ngram extends BaseObject {
 
         List<Token> tokenList = Lists.newArrayList(ngram.tokenList);
         List<Token> tokenList1 = Lists.newArrayList(this.tokenList);
+        if (tokenList.size() != tokenList1.size()) {
+            return false;
+        }
         Collections.sort(tokenList);
         Collections.sort(tokenList1);
-        return !(tokenList1 != null ? !tokenList1.equals(tokenList) : tokenList != null);
+        for (int i = 0; i < tokenList.size(); i++) {
+            if (!tokenList.get(i).equals(tokenList1.get(i))) {
+                return false;
+            }
+        }
+        return true;
 
     }
 
     @Override
     public int hashCode() {
-        return tokenList != null ? tokenList.hashCode() : 0;
+        List<Token> tokenList1 = Lists.newArrayList(this.tokenList);
+        Collections.sort(tokenList1);
+        return tokenList != null ? Objects.hashCode(tokenList1) : 0;
     }
 }
