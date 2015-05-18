@@ -62,7 +62,9 @@ public class Util {
                 if (!isFirstOccurance || (insertMap.size() != 1 && !isFirstOccurance)) {
                     str.append(Constants.START_END_FLAG);
                 } else {
+                    str.append(' ');
                     str.append(isStart ? Constants.START_FLAG : Constants.END_FLAG);
+                    str.append(' ');
                 }
                 isFirstOccurance = false;
                 insertMap.remove(i);
