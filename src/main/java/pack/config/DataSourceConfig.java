@@ -24,7 +24,7 @@ public class DataSourceConfig {
     @Bean
     public DataSource dataSource() throws PropertyVetoException, URISyntaxException {
         String username, password, dbUrl, driverClassName;
-        username = env.getProperty("jdbc.username");
+        username = env.getProperty("jdbc.user");
         password = env.getProperty("jdbc.password");
         dbUrl = env.getProperty("jdbc.url");
         driverClassName = env.getProperty("jdbc.dialect");
