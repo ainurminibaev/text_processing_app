@@ -70,13 +70,14 @@ public class NgramServiceImpl implements NgramService {
             }
             //удаляем старое слово, чтобы слова вставить
             wordsList.remove(i);
+            token = token.replaceAll("[^\\w,]", "");
             if (token.trim().length() == 0) {
                 //пропускаем слова-пустышки
                 i--;
                 continue;
             }
             //избавляемся от всего, кроме букв и запятых
-            wordsList.add(i, token.replaceAll("[^\\w,]", ""));
+            wordsList.add(i, token);
         }
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
