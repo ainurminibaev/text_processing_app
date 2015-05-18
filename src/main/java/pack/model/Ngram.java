@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 
 import javax.persistence.*;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -14,7 +15,11 @@ import java.util.List;
 @Table(name = "ngram")
 public class Ngram extends BaseObject {
 
-    @OneToMany(mappedBy = "ngram", cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinTable(name = "ngram_token",
+            joinColumns = {@JoinColumn(name = "ngramId")},
+            inverseJoinColumns = {@JoinColumn(name = "tokenId")}
+    )
     private List<Token> tokenList;
     private Double probability;
     private Integer ngramSize;
@@ -86,4 +91,11 @@ public class Ngram extends BaseObject {
         Collections.sort(tokenList1);
         return tokenList != null ? Objects.hashCode(tokenList1) : 0;
     }
+
+    public static Comparator<Ngram> BY_PROBABILITY_DESC_COMPARATOR = new Comparator<Ngram>() {
+        @Override
+        public int compare(Ngram o1, Ngram o2) {
+            return o2.getProbability().compareTo(o1.getProbability());
+        }
+    };
 }

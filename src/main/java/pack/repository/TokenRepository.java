@@ -5,4 +5,5 @@ import pack.model.Token;
 
 public interface TokenRepository extends CrudRepository<Token, Long> {
 
+    Token findOneByToken(String word);
 }

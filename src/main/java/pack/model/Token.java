@@ -1,6 +1,8 @@
 package pack.model;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by ainurminibaev on 12.05.15.
@@ -11,9 +13,8 @@ public class Token extends BaseObject implements Comparable<Token> {
 
     private String token;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "ngram_id")
-    private Ngram ngram;
+    @ManyToMany(mappedBy = "tokenList")
+    private Set<Ngram> ngramSet;
 
     public Token(String word) {
         this.token = word;
@@ -22,20 +23,20 @@ public class Token extends BaseObject implements Comparable<Token> {
     public Token() {
     }
 
-    public Ngram getNgram() {
-        return ngram;
-    }
-
-    public void setNgram(Ngram ngram) {
-        this.ngram = ngram;
-    }
-
     public String getToken() {
         return token;
     }
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Set<Ngram> getNgramSet() {
+        return ngramSet;
+    }
+
+    public void setNgramSet(Set<Ngram> ngramSet) {
+        this.ngramSet = ngramSet;
     }
 
     @Override
