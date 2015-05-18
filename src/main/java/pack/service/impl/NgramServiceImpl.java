@@ -5,6 +5,8 @@ import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import pack.Constants;
+import pack.Util;
 import pack.model.Ngram;
 import pack.model.Token;
 import pack.repository.NgramRepository;
@@ -38,37 +40,14 @@ public class NgramServiceImpl implements NgramService {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = null;
             StringBuilder textBuilder = new StringBuilder();
-            BreakIterator sentenceIterator =
-                    BreakIterator.getSentenceInstance(Locale.ENGLISH);
+            BreakIterator sentenceIterator = BreakIterator.getSentenceInstance(Locale.ENGLISH);
             while ((line = reader.readLine()) != null) {
-                boolean isStartFlag = true;
-                sentenceIterator.setText(line);
-                int flagIndex = sentenceIterator.current();
-                Map<Integer, Boolean> insertMap = new HashMap<>();
-                while (flagIndex != -1) {
-                    if (isStartFlag) {
-                        insertMap.put(flagIndex, isStartFlag);
-                        isStartFlag = false;
-                    } else {
-                        insertMap.put(flagIndex - 1, isStartFlag);
-                        isStartFlag = true;
-                    }
-                    flagIndex = sentenceIterator.next();
+                if (line.trim().length() == 0) {
+                    continue;
                 }
-                StringBuilder str = new StringBuilder(line.length());
-                for (int i = 0; i < line.length(); i++) {
-                    if (insertMap.containsKey(i)) {
-                        Boolean isStart = insertMap.get(i);
-                        str.append(" ").append(isStart ? START_FLAG : END_FLAG).append(" ");
-                        if (isStart) str.append(line.charAt(i));
-                    } else {
-                        str.append(line.charAt(i));
-                    }
-                }
-                textBuilder.append(str.toString());
+                textBuilder.append(Util.getMarkedLine(line, sentenceIterator));
                 textBuilder.append('\n');
             }
-            textBuilder.append(" </s>");
             return textBuilder.toString();
         } catch (Exception ignored) {
             ignored.printStackTrace();
@@ -76,31 +55,12 @@ public class NgramServiceImpl implements NgramService {
         return "";
     }
 
+
     @Override
     public void buildNgram(String text, int ngramSize) {
         //TODO  [\\s,;\\n\\t]+
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
-//        for (int i = 0; i < wordsList.size(); i++) {
-//            int currentIndex = i;
-//            String token = wordsList.get(currentIndex);
-//            if (hasStartFlag(token)) {
-//                wordsList.add(currentIndex, START_FLAG);
-//                currentIndex++;
-//            }
-//            if (hasEndFlag(token)) {
-//                if (currentIndex + 1 >= wordsList.size()) {
-//                    wordsList.add(END_FLAG);
-//                    break;
-//                } else {
-//                    wordsList.add(currentIndex + 1, END_FLAG);
-//                }
-//                currentIndex++;
-//            }
-//            wordsList.remove(currentIndex);
-//            i = currentIndex;
-//            wordsList.add(currentIndex, token.replaceAll("[^\\w]", ""));
-//        }
-//TODO clean symbols except ,
+        cleanWordSetFromTrunk(wordsList);
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
@@ -115,7 +75,7 @@ public class NgramServiceImpl implements NgramService {
             boolean canBeNgram = true;
             for (int j = 0; j < ngramSize; j++) {
                 String word = words[i + j];
-                if ((word.equals(START_FLAG) && j != 0) || (word.equals(END_FLAG) && j != ngramSize - 1)) {
+                if ((word.equals(Constants.START_FLAG) && j != 0) || (word.equals(Constants.END_FLAG) && j != ngramSize - 1)) {
                     canBeNgram = false;
                     break;
                 }
@@ -141,6 +101,30 @@ public class NgramServiceImpl implements NgramService {
             }
         }
         System.out.println("All words have been parsed!");
+    }
+
+    /**
+     * Избавляемся от пустышек, символов
+     * @param wordsList
+     */
+    private void cleanWordSetFromTrunk(ArrayList<String> wordsList) {
+        for (int i = 0; i < wordsList.size(); i++) {
+            String token = wordsList.get(i);
+            //пропускаем признаки старта и конца
+            if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
+                continue;
+            }
+            //удаляем старое слово, чтобы слова вставить
+            wordsList.remove(i);
+            token = token.replaceAll("[^\\w,]", "");
+            if (token.trim().length() == 0) {
+                //пропускаем слова-пустышки
+                i--;
+                continue;
+            }
+            //избавляемся от всего, кроме букв и запятых
+            wordsList.add(i, token);
+        }
     }
 
     private boolean hasEndFlag(String token) {
