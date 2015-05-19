@@ -143,10 +143,6 @@ public class ConcurrentSaverImpl implements ConcurrentSaver {
      */
     @Override
     public Token findSimilar(String token) {
-        Token cachedToken = tokenHashMap.get(token);
-        if (cachedToken == null) {
-            return tokenRepository.findOneByToken(token);
-        }
-        return cachedToken;
+        return tokenHashMap.get(token);
     }
 }
