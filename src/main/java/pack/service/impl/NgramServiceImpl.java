@@ -11,6 +11,7 @@ import pack.model.Ngram;
 import pack.model.Token;
 import pack.repository.NgramRepository;
 import pack.repository.TokenRepository;
+import pack.service.ConcurrentSaver;
 import pack.service.NgramService;
 
 import java.io.BufferedReader;
@@ -30,9 +31,11 @@ public class NgramServiceImpl implements NgramService {
     @Autowired
     TokenRepository tokenRepository;
 
+    @Autowired
+    ConcurrentSaver concurrentSaver;
+
     /**
      * Распарсить текст из файла так, чтобы разбить на Ngram
-     * //TODO указать признак конца(начала) предложений или это в методе buildNgram??
      *
      * @param file
      */
@@ -79,7 +82,8 @@ public class NgramServiceImpl implements NgramService {
                     canBeNgram = false;
                     break;
                 }
-                t = getOneByToken(word);
+                t = // tokenRepository.findOneByToken(word);
+                        concurrentSaver.findSimilar(word);
                 if (t == null) {
                     t = new Token();
                     t.setToken(word);
@@ -89,12 +93,14 @@ public class NgramServiceImpl implements NgramService {
             if (canBeNgram) {
                 for (Token token : tokens) {
                     if (token.getId() == null) {
-                        tokenRepository.save(token);
+//                        tokenRepository.save(token);
+                        concurrentSaver.addToQueue(token);
                     }
                 }
                 ngram.setTokenList(tokens);
                 ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
-                ngramRepository.save(ngram);
+//                ngramRepository.save(ngram);
+                concurrentSaver.addToQueue(ngram);
             }
 
             if (i * 100.0 / words.length - p > 10) {
@@ -103,15 +109,12 @@ public class NgramServiceImpl implements NgramService {
             }
         }
         System.out.println("All words have been parsed!");
-    }
-
-    @Cacheable(value = "cache", cacheManager = "cacheManager", unless = "#result == null")
-    private Token getOneByToken(String word) {
-        return tokenRepository.findOneByToken(word);
+        concurrentSaver.waitSaving();
     }
 
     /**
      * Избавляемся от пустышек, символов
+     *
      * @param wordsList
      */
     private void cleanWordSetFromTrunk(ArrayList<String> wordsList) {
