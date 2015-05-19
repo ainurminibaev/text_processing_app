@@ -29,11 +29,29 @@ public class ReplacerImpl implements Replacer {
             if (words[i].equals("?")) {
                 List<Ngram> ngrams = buildAllNGrams(words, i, ngramSize);
                 List<Ngram> bestNgrams = findBestMatchedNgram(ngrams, ngramSize);
-                System.out.println("missing word with index = " + i + " can be replaced with(sorted):");
+
                 Set<Ngram> bestSet = new HashSet<>(bestNgrams);
                 bestNgrams = Lists.newArrayList(bestSet);
                 sortNgrams(bestNgrams);
 
+                ArrayList<Ngram> mostLikelyNgrams = new ArrayList<>();
+                for (int j = 0; j < bestNgrams.size(); j++) {
+                    for (int k = j + 1; k < bestNgrams.size(); k++) {
+                        if ((bestNgrams.get(j).getTokenList().get(1).equals(bestNgrams.get(k).getTokenList().get(0)))) {
+                            mostLikelyNgrams.add(bestNgrams.get(j));
+                            mostLikelyNgrams.add(bestNgrams.get(k));
+                        }
+                    }
+                }
+
+                if (mostLikelyNgrams.size() > 0) {
+                    System.out.println("most likely ngrams pairs:");
+                    for (int j = 0; j < mostLikelyNgrams.size(); j++)
+                        System.out.println(String.format("%s & %s", mostLikelyNgrams.get(j), mostLikelyNgrams.get(++j)));
+                    System.out.println();
+                }
+
+                System.out.println("missing word with index = " + i + " can be replaced with(sorted):");
                 for (Ngram ngram : bestNgrams) {
                     System.out.println(ngram);
                 }
@@ -84,7 +102,7 @@ public class ReplacerImpl implements Replacer {
         int startPos = skipIndex - ngramSize + 1;
 
         List<Ngram> ngrams = new ArrayList<>();
-        for (int i = startPos; i < startPos + ngramSize - 1; i++) {
+        for (int i = startPos; i < startPos + ngramSize; i++) {
             if (i < 0) {
                 continue;
             }
