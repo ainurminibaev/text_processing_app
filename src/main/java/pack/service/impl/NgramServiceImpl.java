@@ -79,7 +79,7 @@ public class NgramServiceImpl implements NgramService {
                     canBeNgram = false;
                     break;
                 }
-                t = tokenRepository.findOneByToken(word);
+                t = getOneByToken(word);
                 if (t == null) {
                     t = new Token();
                     t.setToken(word);
@@ -87,8 +87,10 @@ public class NgramServiceImpl implements NgramService {
                 tokens.add(t);
             }
             if (canBeNgram) {
-                for (Token token: tokens){
-                    tokenRepository.save(token);
+                for (Token token : tokens) {
+                    if (token.getId() == null) {
+                        tokenRepository.save(token);
+                    }
                 }
                 ngram.setTokenList(tokens);
                 ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
@@ -97,10 +99,15 @@ public class NgramServiceImpl implements NgramService {
 
             if (i * 100.0 / words.length - p > 10) {
                 System.out.println(i * 100.0 / words.length + " words have been parsed");
-                p = (int)(i * 100.0 / words.length);
+                p = (int) (i * 100.0 / words.length);
             }
         }
         System.out.println("All words have been parsed!");
+    }
+
+    @Cacheable(value = "cache", cacheManager = "cacheManager", unless = "#result == null")
+    private Token getOneByToken(String word) {
+        return tokenRepository.findOneByToken(word);
     }
 
     /**
