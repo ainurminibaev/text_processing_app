@@ -66,9 +66,9 @@ public class SentenceBuilderImpl implements SentenceBuilder {
     @Transactional
     public String buildRandomSentence(int n) {
         if (n < 2) throw new RuntimeException("n should be >= 2");
-        Ngram random = ngramRepository.randomNgramByNgramSize(n);
+        Ngram random = ngramRepository.randomFirstNgramByNgramSize(n);
         while (random == null || !random.getTokenList().get(0).getToken().equals(Constants.START_FLAG)) {
-            random = ngramRepository.randomNgramByNgramSize(n);
+            random = ngramRepository.randomFirstNgramByNgramSize(n);
         }
         StringBuilder text = new StringBuilder();
         addNgramStringBuilder(random, text);

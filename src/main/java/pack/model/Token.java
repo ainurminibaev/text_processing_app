@@ -13,7 +13,7 @@ public class Token extends BaseObject implements Comparable<Token> {
 
     private String token;
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "tokenList")
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "tokenList")
     private Set<Ngram> ngramSet;
 
     public Token(String word) {

@@ -15,12 +15,13 @@ import java.util.List;
 @Table(name = "ngram")
 public class Ngram extends BaseObject {
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinTable(name = "ngram_token",
             joinColumns = {@JoinColumn(name = "ngramId")},
             inverseJoinColumns = {@JoinColumn(name = "tokenId")}
     )
     private List<Token> tokenList;
+    private Boolean isStart;
     private Double probability;
     private Integer ngramSize;
 
@@ -29,6 +30,22 @@ public class Ngram extends BaseObject {
     }
 
     public Ngram() {
+    }
+
+    public Boolean getIsStart() {
+        return isStart;
+    }
+
+    public void setIsStart(Boolean isStart) {
+        this.isStart = isStart;
+    }
+
+    public static Comparator<Ngram> getByProbabilityDescComparator() {
+        return BY_PROBABILITY_DESC_COMPARATOR;
+    }
+
+    public static void setByProbabilityDescComparator(Comparator<Ngram> byProbabilityDescComparator) {
+        BY_PROBABILITY_DESC_COMPARATOR = byProbabilityDescComparator;
     }
 
     public List<Token> getTokenList() {
