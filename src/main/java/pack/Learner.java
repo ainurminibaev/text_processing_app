@@ -28,7 +28,6 @@ public class Learner {
 
         //clean previous work
         ngramRepository.deleteAll();
-        tokenRepository.deleteAll();
         String text = ngramService.loadFile("a.txt");
         ngramService.buildNgram(text, NGRAM);
     }
