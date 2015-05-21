@@ -3,3 +3,10 @@ jdbc.password=postgres
 jdbc.driver=org.postgresql.Driver
 jdbc.url=jdbc:postgresql://127.0.0.1:5432/text_recognition_a
 jdbc.dialect=org.hibernate.dialect.PostgreSQL9Dialect
+
+# to move to HSQL
+#jdbc.user=postgres
+#jdbc.password=postgres
+#jdbc.driver=org.hsqldb.jdbcDriver
+#jdbc.url=jdbc:hsqldb:hsql://127.0.0.1/text_recognition
+#jdbc.dialect=org.hibernate.dialect.HSQLDialect

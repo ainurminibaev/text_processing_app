@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
@@ -27,12 +29,18 @@ public class DataSourceConfig {
         username = env.getProperty("jdbc.user");
         password = env.getProperty("jdbc.password");
         dbUrl = env.getProperty("jdbc.url");
-        driverClassName = env.getProperty("jdbc.dialect");
+        driverClassName = env.getProperty("jdbc.driver");
+        if (driverClassName.toLowerCase().contains("hsql")) {
+            return new EmbeddedDatabaseBuilder()
+                    .setType(EmbeddedDatabaseType.HSQL)
+                    .build();
+        }
         ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setDriverClass(driverClassName);
         dataSource.setJdbcUrl(dbUrl);
         dataSource.setUser(username);
         dataSource.setPassword(password);
+
         return dataSource;
     }
 
