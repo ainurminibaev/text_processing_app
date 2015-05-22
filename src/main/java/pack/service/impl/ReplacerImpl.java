@@ -42,11 +42,17 @@ public class ReplacerImpl implements Replacer {
                 sortNgrams(bestNgrams);
 
                 List<NgramsCortege> ngramsCorteges = getBOBM(bestNgrams, createRegexes(words, i));
-                sortNgramsCortages(ngramsCorteges);
 
                 System.out.println("best matches ngrams:");
-                for (NgramsCortege nc : ngramsCorteges) {
-                    System.out.println(nc);
+                if (ngramsCorteges == null) {
+                    for (Ngram n : bestNgrams) {
+                        System.out.println(n);
+                    }
+                } else {
+                    sortNgramsCortages(ngramsCorteges);
+                    for (NgramsCortege nc : ngramsCorteges) {
+                        System.out.println(nc);
+                    }
                 }
             }
         }
@@ -54,6 +60,9 @@ public class ReplacerImpl implements Replacer {
     }
 
     private List<NgramsCortege> getBOBM(List<Ngram> bestNgrams, ArrayList<Pattern> patterns) {
+        if (patterns.size() <= 1) {
+            return null;
+        }
         List<NgramsCortege> ngramsCortege = new ArrayList<>();
         if (patterns.size() == 0) return null;
         for (int i = 0; i < bestNgrams.size(); i++) {
