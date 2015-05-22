@@ -12,14 +12,24 @@ import pack.service.SentenceBuilder;
 
 import java.io.FileNotFoundException;
 
+import static pack.Constants.*;
+
 /**
  * Created by giylmi on 19.05.2015.
  */
 public class Learner {
 
-    private static final int NGRAM = 3;
 
     public static void main(String[] args) throws FileNotFoundException {
+        int ngramSize;
+        String modelData;
+        try {
+            ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
+            modelData = args[1].substring(MODEL_DATA.length());
+        } catch (Exception e) {
+            ngramSize = NGRAM;
+            modelData = "a.txt";
+        }
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, DataSourceConfig.class, PersistenceConfig.class, CachingConfig.class);
         NgramRepository ngramRepository = context.getBean(NgramRepository.class);
         TokenRepository tokenRepository = context.getBean(TokenRepository.class);
@@ -28,7 +38,7 @@ public class Learner {
 
         //clean previous work
         ngramRepository.deleteAll();
-        String text = ngramService.loadFile("a.txt");
-        ngramService.buildNgram(text, NGRAM);
+        String text = ngramService.loadFile(modelData);
+        ngramService.buildNgram(text, ngramSize);
     }
 }

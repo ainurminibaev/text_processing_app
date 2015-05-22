@@ -113,8 +113,8 @@ public class ConcurrentSaverImpl implements ConcurrentSaver {
      */
     @Override
     public void waitSaving() {
+        System.out.println("waiting of saving");
         synchronized (saveQueue) {
-            System.out.println("waiting of saving");
             if (!saveQueue.isEmpty()) {
                 try {
                     saveQueue.wait();

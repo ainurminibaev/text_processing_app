@@ -10,14 +10,22 @@ import pack.service.SentenceBuilder;
 
 import java.io.FileNotFoundException;
 
+import static pack.Constants.*;
+
 /**
  * Created by ainurminibaev on 12.05.15.
  */
 public class Main {
 
-    public static final int NGRAM = 3;
 
     public static void main(String[] args) throws FileNotFoundException {
+        int ngramSize;
+        try {
+            ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
+        } catch (Exception e) {
+            ngramSize = NGRAM;
+        }
+
         //define context
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, DataSourceConfig.class, PersistenceConfig.class, CachingConfig.class);
         NgramRepository ngramRepository = context.getBean(NgramRepository.class);
@@ -32,10 +40,10 @@ public class Main {
             System.out.print(word + " ");
         }
         System.out.println();
-        String sentence = sentenceBuilder.buildSentence(words, NGRAM);
+        String sentence = sentenceBuilder.buildSentence(words, ngramSize);
         System.out.println(sentence);
 
         Replacer replacer = context.getBean(Replacer.class);
-        replacer.replace("broke up into ? masses", NGRAM);
+        replacer.replace("broke up into ? masses", ngramSize);
     }
 }

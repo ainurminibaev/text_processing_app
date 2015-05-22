@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pack.Main;
+import pack.Constants;
 import pack.model.Ngram;
 import pack.model.NgramsCortege;
 import pack.model.Token;
@@ -91,12 +91,12 @@ public class ReplacerImpl implements Replacer {
 
     private ArrayList<Pattern> createRegexes(String[] words, int position) {
         ArrayList<Pattern> patterns = new ArrayList<>();
-        int p = -1 * Main.NGRAM + 1;
+        int p = -1 * Constants.NGRAM + 1;
         for (int i = p; i <= 0; i++) {
             StringBuilder regex = new StringBuilder();
             regex.append(".*");
             boolean createRegexSuccess = true;
-            for (int j = i; j < i + Main.NGRAM; j++) {
+            for (int j = i; j < i + Constants.NGRAM; j++) {
                 if (position + j >= 0 && position + j < words.length) {
                     if (j == 0) {
                         if (i == 0) regex.append("\\s");

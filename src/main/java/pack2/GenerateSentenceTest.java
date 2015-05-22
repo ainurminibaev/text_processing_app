@@ -7,15 +7,13 @@ import pack2.repository.DataReader;
 import pack2.service.SentenceBuilder;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import static pack.Constants.*;
 /**
  * Created by giylmi on 18.05.2015.
  */
 public class GenerateSentenceTest {
 
-    public static final int NGRAM = 3;
 
     public static void main(String[] args) throws IOException {
         //define context

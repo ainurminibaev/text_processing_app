@@ -14,3 +14,4 @@ gradlew.bat
 **/out/
 **/*/target
 *.properties
+dump.bin
