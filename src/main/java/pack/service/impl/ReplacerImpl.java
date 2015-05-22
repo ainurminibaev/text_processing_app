@@ -48,13 +48,6 @@ public class ReplacerImpl implements Replacer {
                 for (NgramsCortege nc : ngramsCorteges) {
                     System.out.println(nc);
                 }
-
-                System.out.println();
-
-                System.out.println("missing word with index = " + i + " can be replaced with(sorted):");
-                for (Ngram ngram : bestNgrams) {
-                    System.out.println(ngram);
-                }
             }
         }
         return null;
