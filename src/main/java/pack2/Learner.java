@@ -7,17 +7,30 @@ import pack2.service.NgramService;
 
 import java.io.FileNotFoundException;
 
+import static pack.Constants.*;
+
 /**
  * Created by giylmi on 19.05.2015.
  */
 public class Learner {
 
-    private static final int NGRAM = 3;
 
     public static void main(String[] args) throws FileNotFoundException {
+        int ngramSize;
+        String modelData;
+        String outputFile;
+        try {
+            ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
+            modelData = args[1].substring(MODEL_DATA.length());
+            outputFile = args[2].substring(MODEL_DATA_OUT.length());
+        } catch (Exception e) {
+            ngramSize = NGRAM;
+            modelData = "a.txt";
+            outputFile = "dump.bin";
+        }
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
 
         NgramService ngramService = context.getBean(NgramService.class);
-        ngramService.buildNgram(ngramService.loadFile("lotr.txt"), NGRAM, "dump.bin");
+        ngramService.buildNgram(ngramService.loadFile(modelData), ngramSize, outputFile);
     }
 }

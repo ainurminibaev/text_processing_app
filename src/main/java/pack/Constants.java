@@ -10,5 +10,7 @@ public interface Constants {
 
     String NGRAM_PARAM = "--n=";
     String MODEL_DATA = "--file=";
+    String MODEL_DATA_OUT = "--output=";
+    String MODEL_DATA_IN = "--input=";
     int NGRAM = 2;
 }
