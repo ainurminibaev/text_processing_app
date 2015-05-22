@@ -44,6 +44,6 @@ public class Main {
         System.out.println(sentence);
 
         Replacer replacer = context.getBean(Replacer.class);
-        replacer.replace("broke up into ? masses", ngramSize);
+        replacer.replace("object of ? little work", ngramSize);
     }
 }

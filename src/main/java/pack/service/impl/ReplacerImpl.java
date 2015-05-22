@@ -44,7 +44,7 @@ public class ReplacerImpl implements Replacer {
                 List<NgramsCortege> ngramsCorteges = getBOBM(bestNgrams, createRegexes(words, i));
 
                 System.out.println("best matches ngrams:");
-                if (ngramsCorteges == null) {
+                if (ngramsCorteges == null || ngramsCorteges.size() == 0) {
                     for (Ngram n : bestNgrams) {
                         System.out.println(n);
                     }
