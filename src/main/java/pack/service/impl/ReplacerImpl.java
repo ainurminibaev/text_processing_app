@@ -178,7 +178,7 @@ public class ReplacerImpl implements Replacer {
 
         List<Ngram> ngrams = new ArrayList<>();
         for (int i = startPos; i < startPos + ngramSize; i++) {
-            if (i < 0) {
+            if (i < 0 || i + ngramSize > words.length) {
                 continue;
             }
             Ngram ngram = new Ngram();
