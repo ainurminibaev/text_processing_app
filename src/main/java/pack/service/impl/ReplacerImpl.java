@@ -28,7 +28,7 @@ public class ReplacerImpl implements Replacer {
 
     @Override
     @Transactional
-    public String replace(String initialSentence, int ngramSize) {
+    public String replace(String initialSentence, int ngramSize, int guessNum) {
         System.out.println(initialSentence);
         String[] words = initialSentence.split("\\s");
         for (int i = 0; i < words.length; i++) {
@@ -42,17 +42,20 @@ public class ReplacerImpl implements Replacer {
                 sortNgrams(bestNgrams);
 
                 List<NgramsCortege> ngramsCorteges = getBOBM(bestNgrams, createRegexes(words, i));
-
                 System.out.println("best matches ngrams:");
-                if (ngramsCorteges == null || ngramsCorteges.size() == 0) {
-                    for (Ngram n : bestNgrams) {
-                        System.out.println(n);
-                    }
-                } else {
+                if (ngramsCorteges != null && ngramsCorteges.size() != 0) {
                     sortNgramsCortages(ngramsCorteges);
                     for (NgramsCortege nc : ngramsCorteges) {
                         System.out.println(nc);
                     }
+                    guessNum = ngramsCorteges.size();
+                }
+                for (Ngram n : bestNgrams) {
+                    if (guessNum == 0) {
+                        break;
+                    }
+                    guessNum--;
+                    System.out.println(n);
                 }
             }
         }

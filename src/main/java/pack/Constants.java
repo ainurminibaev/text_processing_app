@@ -12,5 +12,6 @@ public interface Constants {
     String MODEL_DATA = "--file=";
     String MODEL_DATA_OUT = "--output=";
     String MODEL_DATA_IN = "--input=";
+    String GUESS_NUM = "--guess-num=";
     int NGRAM = 2;
 }

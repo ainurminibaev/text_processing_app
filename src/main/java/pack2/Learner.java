@@ -25,7 +25,7 @@ public class Learner {
             outputFile = args[2].substring(MODEL_DATA_OUT.length());
         } catch (Exception e) {
             ngramSize = NGRAM;
-            modelData = "a.txt";
+            modelData = "lotr.txt";
             outputFile = "dump.bin";
         }
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
