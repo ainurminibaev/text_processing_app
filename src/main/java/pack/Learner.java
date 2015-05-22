@@ -17,7 +17,7 @@ import java.io.FileNotFoundException;
  */
 public class Learner {
 
-    private static final int NGRAM = 3;
+    private static final int NGRAM = 2;
 
     public static void main(String[] args) throws FileNotFoundException {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, DataSourceConfig.class, PersistenceConfig.class, CachingConfig.class);
@@ -29,6 +29,8 @@ public class Learner {
         //clean previous work
         ngramRepository.deleteAll();
         String text = ngramService.loadFile("a.txt");
+        long start = System.currentTimeMillis();
         ngramService.buildNgram(text, NGRAM);
+        System.out.println("Speed: " + (System.currentTimeMillis() - start));
     }
 }

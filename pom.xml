@@ -115,6 +115,14 @@
             <version>1.7.12</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>

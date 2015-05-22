@@ -33,9 +33,6 @@ public class PersistenceConfig {
         vendorAdapter.setGenerateDdl(true);
         vendorAdapter.setShowSql(false);
         String databasePlatform = env.getProperty("jdbc.dialect");
-        if (databasePlatform == null || databasePlatform.isEmpty()) {
-            databasePlatform = "org.hibernate.dialect.PostgreSQL9Dialect";
-        }
         vendorAdapter.setDatabasePlatform(databasePlatform);
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
