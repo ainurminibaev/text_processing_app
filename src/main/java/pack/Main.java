@@ -20,10 +20,16 @@ public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
         int ngramSize;
+        String inputWords;
+        String replacerText;
         try {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
+            inputWords = args[1];
+            replacerText = args[2];
         } catch (Exception e) {
             ngramSize = NGRAM;
+            inputWords = "my best video pile";
+            replacerText = "object of ? little work";
         }
 
         //define context
@@ -33,7 +39,8 @@ public class Main {
         NgramService ngramService = context.getBean(NgramService.class);
         SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
 
-        String[] words = "my best video pile".split("\\s");
+
+        String[] words = inputWords.split("\\s");
         Util.shuffleArray(words);
         for (int i = 0; i < words.length; i++) {
             String word = words[i];
@@ -44,6 +51,6 @@ public class Main {
         System.out.println(sentence);
 
         Replacer replacer = context.getBean(Replacer.class);
-        replacer.replace("object of ? little work", ngramSize);
+        replacer.replace(replacerText, ngramSize);
     }
 }
