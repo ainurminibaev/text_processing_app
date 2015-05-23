@@ -27,7 +27,7 @@ public class Main {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
             inputWords = args[1];
             replacerText = args[2];
-            guessNum = Integer.valueOf(args[4].substring(GUESS_NUM.length()));
+            guessNum = Integer.valueOf(args[4].substring(GUESS_NUM_PARAM.length()));
         } catch (Exception e) {
             ngramSize = NGRAM;
             guessNum = 4;

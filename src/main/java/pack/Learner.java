@@ -23,12 +23,15 @@ public class Learner {
     public static void main(String[] args) throws FileNotFoundException {
         int ngramSize;
         String modelData;
+        double unkWordProbability;
         try {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            modelData = args[1].substring(MODEL_DATA.length());
+            modelData = args[1].substring(MODEL_DATA_PARAM.length());
+            unkWordProbability = Double.valueOf(args[2].substring(UNKNOWN_WORD_PARAM.length()));
         } catch (Exception e) {
             ngramSize = NGRAM;
             modelData = "a.txt";
+            unkWordProbability = 0.000364498;
         }
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, DataSourceConfig.class, PersistenceConfig.class, CachingConfig.class);
         NgramRepository ngramRepository = context.getBean(NgramRepository.class);
@@ -39,6 +42,6 @@ public class Learner {
         //clean previous work
         ngramRepository.deleteAll();
         String text = ngramService.loadFile(modelData);
-        ngramService.buildNgram(text, ngramSize);
+        ngramService.buildNgram(text, ngramSize, unkWordProbability);
     }
 }

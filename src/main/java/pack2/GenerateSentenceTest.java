@@ -22,7 +22,7 @@ public class GenerateSentenceTest {
         String inputFile;
         try {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            inputFile = args[1].substring(MODEL_DATA_IN.length());
+            inputFile = args[1].substring(MODEL_DATA_IN_PARAM.length());
         } catch (Exception e) {
             ngramSize = NGRAM;
             inputFile = "dump.bin";

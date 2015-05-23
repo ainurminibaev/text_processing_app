@@ -21,8 +21,8 @@ public class Learner {
         String outputFile;
         try {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            modelData = args[1].substring(MODEL_DATA.length());
-            outputFile = args[2].substring(MODEL_DATA_OUT.length());
+            modelData = args[1].substring(MODEL_DATA_PARAM.length());
+            outputFile = args[2].substring(MODEL_DATA_OUT_PARAM.length());
         } catch (Exception e) {
             ngramSize = NGRAM;
             modelData = "lotr.txt";
