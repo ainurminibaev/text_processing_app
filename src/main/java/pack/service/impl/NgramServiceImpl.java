@@ -97,7 +97,7 @@ public class NgramServiceImpl implements NgramService {
                     }
                 }
                 ngram.setTokenList(tokens);
-                ngram.setProbability(calculateNgramProvability(ngram, words));
+                ngram.setProbability(calculateNgramProvability(ngram, words, wordsSet.size()));
 //                ngramRepository.save(ngram);
                 concurrentSaver.addToQueue(ngram);
             }
@@ -118,7 +118,9 @@ public class NgramServiceImpl implements NgramService {
      * @param uselessWordsProbability
      */
     private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
+        //для начала нужно иметь эти данные для "сырых" строк
         String[] wordsArray = wordsList.toArray(new String[wordsList.size()]);
+        HashSet<String> wordsSet = Sets.newHashSet(wordsArray);
         double min = Double.MAX_VALUE;
         String minToken = null;
         for (int i = 0; i < wordsList.size(); i++) {
@@ -127,7 +129,7 @@ public class NgramServiceImpl implements NgramService {
             if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
                 continue;
             }
-            Double wordProbability = getProbabilityForPair(token, null, wordsArray);
+            Double wordProbability = getProbabilityForPair(token, null, wordsArray, wordsSet.size());
             if (wordProbability < uselessWordsProbability) {
                 token = Constants.UNKNOWN_WORD_MARKER;
             }
@@ -161,17 +163,18 @@ public class NgramServiceImpl implements NgramService {
         return Character.isUpperCase(token.charAt(0));
     }
 
+
     /**
-     * Расчет вероятность для Ngram
+     *  Расчет вероятность для Ngram
      * Pn = P(w1,w2)*P(w2,w3) ....
-     *
+     * @param wordSetSize - V - мощность словаря
      * @return
      */
-    private Double calculateNgramProvability(Ngram ngram, String[] words) {
+    private Double calculateNgramProvability(Ngram ngram, String[] words, int wordSetSize) {
         double totalProbab = 1;
         for (int i = 0; i < ngram.getTokenList().size() - 1; i++) {
             List<Token> tokens = ngram.getTokenList();
-            totalProbab *= getProbabilityForPair(tokens.get(i).getToken(), tokens.get(i + 1).getToken(), words);
+            totalProbab *= getProbabilityForPair(tokens.get(i).getToken(), tokens.get(i + 1).getToken(), words, wordSetSize);
         }
         return totalProbab;
     }
@@ -183,8 +186,8 @@ public class NgramServiceImpl implements NgramService {
      * @return
      */
     @Cacheable(value = "cache", cacheManager = "cacheManager")
-    private Double getProbabilityForPair(String left, String right, String[] words) {
-        return (getCountOfSubString(left, right, words) + 1) / ((double) getCountOfSubString(left, null, words) + words.length);
+    private Double getProbabilityForPair(String left, String right, String[] words, int wordSetSize) {
+        return (getCountOfSubString(left, right, words) + 1) / ((double) getCountOfSubString(left, null, words) + wordSetSize);
     }
 
     /**
