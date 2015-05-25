@@ -113,9 +113,10 @@ public class NgramServiceImpl implements NgramService {
 
     /**
      * Избавляемся от пустышек, символов
+     * Избавляемся от мало используемых слов, заменяем их на UNK
      *
      * @param wordsList
-     * @param uselessWordsProbability
+     * @param uselessWordsProbability - вероятность ниже которой слово бесполезно
      */
     private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
         //для начала нужно иметь эти данные для "сырых" строк
@@ -129,7 +130,7 @@ public class NgramServiceImpl implements NgramService {
             if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
                 continue;
             }
-            Double wordProbability = getProbabilityForPair(token, null, wordsArray, wordsSet.size());
+            Double wordProbability = getCountOfSubString(token, null, wordsArray) / (double) wordsSet.size();
             if (wordProbability < uselessWordsProbability) {
                 token = Constants.UNKNOWN_WORD_MARKER;
             }
@@ -165,8 +166,9 @@ public class NgramServiceImpl implements NgramService {
 
 
     /**
-     *  Расчет вероятность для Ngram
+     * Расчет вероятность для Ngram
      * Pn = P(w1,w2)*P(w2,w3) ....
+     *
      * @param wordSetSize - V - мощность словаря
      * @return
      */
