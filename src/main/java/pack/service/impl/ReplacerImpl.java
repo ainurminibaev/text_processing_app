@@ -43,9 +43,13 @@ public class ReplacerImpl implements Replacer {
                 if (ngramsCorteges != null && ngramsCorteges.size() != 0) {
                     sortNgramsCortages(ngramsCorteges);
                     for (NgramsCortege nc : ngramsCorteges) {
+                        if (guessNum == 0) {
+                        break;
+                    }
+                    guessNum--;
                         System.out.println(printNgramCortege(nc, words, i));
                     }
-//                    guessNum  = ngramsCorteges.size();
+//
                 }
 //                for (Ngram n : bestNgrams) {
 //                    if (guessNum == 0) {
