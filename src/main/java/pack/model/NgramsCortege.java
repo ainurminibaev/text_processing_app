@@ -7,6 +7,7 @@ public class NgramsCortege {
 
     private ArrayList<Ngram> mNgrams;
     private Double mProbability;
+    private String mWord;
 
     public NgramsCortege() {
         mNgrams = new ArrayList<>();
@@ -30,6 +31,14 @@ public class NgramsCortege {
 
     public void add(Ngram ngram) {
         mNgrams.add(ngram);
+    }
+
+    public String getWord() {
+        return mWord;
+    }
+
+    public void setWord(String word) {
+        mWord = word;
     }
 
     @Override
