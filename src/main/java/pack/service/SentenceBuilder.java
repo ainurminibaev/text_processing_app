@@ -5,7 +5,7 @@ package pack.service;
  */
 public interface SentenceBuilder {
 
-    String buildSentence(String[] words, int ngram);
+    String buildSentence(String[] words);
 
-    String buildRandomSentence(int ngram);
+    String buildRandomSentence();
 }

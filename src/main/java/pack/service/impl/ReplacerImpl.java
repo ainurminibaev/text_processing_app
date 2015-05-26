@@ -28,7 +28,8 @@ public class ReplacerImpl implements Replacer {
 
     @Override
     @Transactional
-    public String replace(String initialSentence, int ngramSize, int guessNum) {
+    public String replace(String initialSentence, int guessNum) {
+        int ngramSize = ngramRepository.findAny().getNgramSize();
         System.out.println(initialSentence);
         String[] words = initialSentence.split("\\s");
         for (int i = 0; i < words.length; i++) {

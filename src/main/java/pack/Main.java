@@ -19,17 +19,14 @@ public class Main {
 
 
     public static void main(String[] args) throws FileNotFoundException {
-        int ngramSize;
         int guessNum;
         String inputWords;
         String replacerText;
         try {
-            ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            inputWords = args[1];
-            replacerText = args[2];
-            guessNum = Integer.valueOf(args[4].substring(GUESS_NUM_PARAM.length()));
+            inputWords = args[0];
+            replacerText = args[1];
+            guessNum = Integer.valueOf(args[2].substring(GUESS_NUM_PARAM.length()));
         } catch (Exception e) {
-            ngramSize = NGRAM;
             guessNum = 4;
             inputWords = "when you want to see any thing";
             replacerText = "He asked ? to let";
@@ -50,10 +47,10 @@ public class Main {
             System.out.print(word + " ");
         }
         System.out.println();
-        String sentence = sentenceBuilder.buildSentence(words, ngramSize);
+        String sentence = sentenceBuilder.buildSentence(words);
         System.out.println(sentence);
 
         Replacer replacer = context.getBean(Replacer.class);
-        replacer.replace(replacerText, ngramSize, guessNum);
+        replacer.replace(replacerText, guessNum);
     }
 }

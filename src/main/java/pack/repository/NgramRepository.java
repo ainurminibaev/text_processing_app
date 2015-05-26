@@ -12,4 +12,7 @@ public interface NgramRepository extends CrudRepository<Ngram, Long> {
 
     @Query(nativeQuery = true, value = "select * from ngram where isstart and ngramSize = ?1 order by RANDOM() limit 1")
     Ngram randomFirstNgramByNgramSize(int ngramSize);
+
+    @Query(nativeQuery = true, value = "select * from ngram order by RANDOM() limit 1")
+    Ngram findAny();
 }
