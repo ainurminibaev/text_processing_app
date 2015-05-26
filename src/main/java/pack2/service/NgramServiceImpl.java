@@ -165,6 +165,10 @@ public class NgramServiceImpl implements NgramService {
                 }
             }
         }
+        // Divide with minus of the test corpus size
+        perplexity /= -1 * testNgrams.size();
+        // calculate 2 power the previous result
+        perplexity = Math.pow(2, perplexity);
         return perplexity;
     }
 }
