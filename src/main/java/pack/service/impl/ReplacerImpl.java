@@ -67,7 +67,8 @@ public class ReplacerImpl implements Replacer {
         if (patterns.size() <= 1) {
             return null;
         }
-        List<NgramsCortege> ngramsCortege = new ArrayList<>();
+        List<NgramsCortege> ngramsCorteges = new ArrayList<>();
+        Set<Integer> toBeRemoved = new HashSet<>();
         if (patterns.size() == 0) return null;
         for (int i = 0; i < bestNgrams.size(); i++) {
             String replacedWord = null;
@@ -90,7 +91,9 @@ public class ReplacerImpl implements Replacer {
                                 ng.add(bestNgrams.get(i));
                                 ng.add(bestNgrams.get(j));
                                 ng.setProbability(bestNgrams.get(i).getProbability() + bestNgrams.get(j).getProbability());
-                                ngramsCortege.add(ng);
+                                ngramsCorteges.add(ng);
+                                toBeRemoved.add(i);
+                                toBeRemoved.add(j);
                                 break;
                             }
                         }
@@ -99,7 +102,17 @@ public class ReplacerImpl implements Replacer {
                 }
             }
         }
-        return ngramsCortege;
+        int alreadyRemoved = 0;
+        ArrayList<Integer> toRemoveIndices = Lists.newArrayList(toBeRemoved);
+        Collections.sort(toRemoveIndices);
+        for (Integer index : toBeRemoved) {
+            try {
+                bestNgrams.remove(index + alreadyRemoved);
+                alreadyRemoved++;
+            } catch (Exception ignored) {
+            }
+        }
+        return ngramsCorteges;
     }
 
     private ArrayList<Pattern> createRegexes(String[] words, int position) {
