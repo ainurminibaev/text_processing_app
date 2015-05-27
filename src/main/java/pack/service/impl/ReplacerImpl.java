@@ -21,20 +21,16 @@ import java.util.regex.Pattern;
 @Service
 public class ReplacerImpl implements Replacer {
 
-    private int missingPosition;
-
     @Autowired
     NgramRepository ngramRepository;
 
     @Override
     @Transactional
-    public String replace(String initialSentence, int guessNum) {
-        int ngramSize = ngramRepository.findAny().getNgramSize();
+    public String replace(String initialSentence, int ngramSize, int guessNum) {
         System.out.println(initialSentence);
         String[] words = initialSentence.split("\\s");
         for (int i = 0; i < words.length; i++) {
             if (words[i].equals("?")) {
-                missingPosition = i;
                 List<Ngram> ngrams = buildAllNGrams(words, i, ngramSize);
                 List<Ngram> bestNgrams = findBestMatchedNgram(ngrams, ngramSize);
 
@@ -43,33 +39,47 @@ public class ReplacerImpl implements Replacer {
                 sortNgrams(bestNgrams);
 
                 List<NgramsCortege> ngramsCorteges = getBOBM(bestNgrams, createRegexes(words, i));
-                System.out.println("best matches ngrams:");
+                System.out.println("variants:");
                 if (ngramsCorteges != null && ngramsCorteges.size() != 0) {
                     sortNgramsCortages(ngramsCorteges);
                     for (NgramsCortege nc : ngramsCorteges) {
-                        System.out.println(nc);
-                    }
-                    guessNum = ngramsCorteges.size();
-                }
-                for (Ngram n : bestNgrams) {
-                    if (guessNum == 0) {
+                        if (guessNum == 0) {
                         break;
                     }
                     guessNum--;
-                    System.out.println(n);
+                        System.out.println(printNgramCortege(nc, words, i));
+                    }
+//
                 }
+//                for (Ngram n : bestNgrams) {
+//                    if (guessNum == 0) {
+//                        break;
+//                    }
+//                    guessNum--;
+//                    System.out.println(n);
+//                }
             }
         }
         return null;
     }
 
     private List<NgramsCortege> getBOBM(List<Ngram> bestNgrams, ArrayList<Pattern> patterns) {
-        if (patterns.size() <= 1) {
-            return null;
-        }
-        List<NgramsCortege> ngramsCorteges = new ArrayList<>();
-        Set<Integer> toBeRemoved = new HashSet<>();
+        List<NgramsCortege> ngramsCortege = new ArrayList<>();
         if (patterns.size() == 0) return null;
+        if (patterns.size() == 1) {
+            for (Ngram n : bestNgrams) {
+                String tokenStrings = listToString(n.getTokenList());
+                Matcher matcher = patterns.get(0).matcher(tokenStrings);
+                String replacedWord = matcher.group(1);
+                if (!replacedWord.equals("<s>") || !replacedWord.equals("</s>")) {
+                    NgramsCortege nc = new NgramsCortege();
+                    nc.setWord(matcher.group(1));
+                    nc.setProbability(n.getProbability());
+                    nc.add(n);
+                }
+            }
+            return ngramsCortege;
+        }
         for (int i = 0; i < bestNgrams.size(); i++) {
             String replacedWord = null;
             String tokenStrings = listToString(bestNgrams.get(i).getTokenList());
@@ -80,20 +90,20 @@ public class ReplacerImpl implements Replacer {
                     break;
                 }
             }
-            if (replacedWord == null) continue;
+            if (replacedWord == null || replacedWord.equals("<s>") || replacedWord.equals("</s>")) continue;
+            NgramsCortege ng = new NgramsCortege();
+            ng.add(bestNgrams.get(i));
+            ng.setWord(replacedWord);
+            ng.setProbability(bestNgrams.get(i).getProbability());
             for (int j = i + 1; j < bestNgrams.size(); j++) {
                 for (Token t : bestNgrams.get(j).getTokenList()) {
                     if (replacedWord.equals(t.getToken())) {
                         for (Pattern p : patterns) {
                             Matcher matcher = p.matcher(tokenStrings);
                             if (matcher.matches()) {
-                                NgramsCortege ng = new NgramsCortege();
-                                ng.add(bestNgrams.get(i));
                                 ng.add(bestNgrams.get(j));
                                 ng.setProbability(bestNgrams.get(i).getProbability() + bestNgrams.get(j).getProbability());
-                                ngramsCorteges.add(ng);
-                                toBeRemoved.add(i);
-                                toBeRemoved.add(j);
+                                bestNgrams.remove(j);
                                 break;
                             }
                         }
@@ -101,18 +111,23 @@ public class ReplacerImpl implements Replacer {
                     }
                 }
             }
+            ngramsCortege.add(ng);
         }
-        int alreadyRemoved = 0;
-        ArrayList<Integer> toRemoveIndices = Lists.newArrayList(toBeRemoved);
-        Collections.sort(toRemoveIndices);
-        for (Integer index : toBeRemoved) {
-            try {
-                bestNgrams.remove(index + alreadyRemoved);
-                alreadyRemoved++;
-            } catch (Exception ignored) {
+        return ngramsCortege;
+    }
+
+    private String printNgramCortege(NgramsCortege ngramsCortege, String[] words, int position) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i == position) {
+                s.append(ngramsCortege.getWord());
+                s.append(" ");
+            } else {
+                s.append(words[i]);
+                s.append(" ");
             }
         }
-        return ngramsCorteges;
+        return s.toString();
     }
 
     private ArrayList<Pattern> createRegexes(String[] words, int position) {
