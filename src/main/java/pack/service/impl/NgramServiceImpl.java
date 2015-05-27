@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import pack.Constants;
 import pack.Util;
 import pack.model.Ngram;
@@ -61,10 +60,9 @@ public class NgramServiceImpl implements NgramService {
 
 
     @Override
-    public void buildNgram(String text, int ngramSize) {
-        //TODO  [\\s,;\\n\\t]+
+    public void buildNgram(String text, int ngramSize, double uselessWordsProbability) {
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
-        cleanWordSetFromTrunk(wordsList);
+        cleanWordSetFromTrunk(wordsList, uselessWordsProbability);
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
@@ -115,17 +113,33 @@ public class NgramServiceImpl implements NgramService {
 
     /**
      * Избавляемся от пустышек, символов
+     * Избавляемся от мало используемых слов, заменяем их на UNK
      *
      * @param wordsList
+     * @param uselessWordsProbability - вероятность ниже которой слово бесполезно
      */
-    private void cleanWordSetFromTrunk(ArrayList<String> wordsList) {
+    private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
+        //для начала нужно иметь эти данные для "сырых" строк
+        String[] wordsArray = wordsList.toArray(new String[wordsList.size()]);
+        HashSet<String> wordsSet = Sets.newHashSet(wordsArray);
+        double min = Double.MAX_VALUE;
+        String minToken = null;
         for (int i = 0; i < wordsList.size(); i++) {
             String token = wordsList.get(i);
             //пропускаем признаки старта и конца
             if (token.equals(Constants.END_FLAG) || token.equals(Constants.START_FLAG)) {
                 continue;
             }
-            //удаляем старое слово, чтобы слова вставить
+            Double wordProbability = getCountOfSubString(token, null, wordsArray) / (double) wordsSet.size();
+            if (wordProbability < uselessWordsProbability) {
+                token = Constants.UNKNOWN_WORD_MARKER;
+            }
+            if (wordProbability < min && wordProbability != 0) {
+                min = wordProbability;
+                minToken = token;
+            }
+            System.out.printf("%s --- %.9f \n", token, wordProbability);
+            //удаляем старое слово, чтобы вставить очищенное
             wordsList.remove(i);
             token = token.replaceAll("[^\\w,]", "");
             if (token.trim().length() == 0) {
@@ -136,6 +150,8 @@ public class NgramServiceImpl implements NgramService {
             //избавляемся от всего, кроме букв и запятых
             wordsList.add(i, token);
         }
+        System.out.println("min");
+        System.out.printf("%s --- %.9f \n", minToken, min);
     }
 
     private boolean hasEndFlag(String token) {
@@ -148,10 +164,12 @@ public class NgramServiceImpl implements NgramService {
         return Character.isUpperCase(token.charAt(0));
     }
 
+
     /**
      * Расчет вероятность для Ngram
      * Pn = P(w1,w2)*P(w2,w3) ....
      *
+     * @param wordSetSize - V - мощность словаря
      * @return
      */
     private Double calculateNgramProvability(Ngram ngram, String[] words, int wordSetSize) {

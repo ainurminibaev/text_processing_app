@@ -24,7 +24,8 @@ public class SentenceBuilderImpl implements SentenceBuilder {
 
     @Override
     @Transactional
-    public String buildSentence(final String[] words, final int ngramSize) {
+    public String buildSentence(final String[] words) {
+        int ngramSize = ngramRepository.findAny().getNgramSize();
         List<Ngram> ngrams = Lists.newArrayList(ngramRepository.findAll());
         ArrayList<String> wordsList = Lists.newArrayList(words);
         // сет из всех слов
@@ -64,7 +65,8 @@ public class SentenceBuilderImpl implements SentenceBuilder {
 
     @Override
     @Transactional
-    public String buildRandomSentence(int n) {
+    public String buildRandomSentence() {
+        int n = ngramRepository.findAny().getNgramSize();
         if (n < 2) throw new RuntimeException("n should be >= 2");
         Ngram random = ngramRepository.randomFirstNgramByNgramSize(n);
         while (random == null || !random.getTokenList().get(0).getToken().equals(Constants.START_FLAG)) {
@@ -99,13 +101,12 @@ public class SentenceBuilderImpl implements SentenceBuilder {
         double total = totalPropability(ngrams);
         double probability = randomer.nextDouble() % total;
         double sum = 0;
-        for (Ngram ngram: ngrams) {
+        for (Ngram ngram : ngrams) {
             if (probability < sum + ngram.getProbability()) {
                 StringBuilder text = new StringBuilder();
                 text.append(ngram.getTokenList().get(ngram.getTokenList().size() - 1)).append(" ");
                 return text.append(buildSentenceFromFirstNgram(ngram)).toString();
-            }
-            else {
+            } else {
                 sum += ngram.getProbability();
             }
         }
@@ -115,14 +116,14 @@ public class SentenceBuilderImpl implements SentenceBuilder {
 
     private double totalPropability(Ngram[] ngrams) {
         double total = 0;
-        for (Ngram ngram: ngrams){
+        for (Ngram ngram : ngrams) {
             total += ngram.getProbability();
         }
         return total;
     }
 
     private void addNgramStringBuilder(Ngram random, StringBuilder text) {
-        for (Token token: random.getTokenList()) {
+        for (Token token : random.getTokenList()) {
             text.append(token.getToken()).append(" ");
         }
     }
