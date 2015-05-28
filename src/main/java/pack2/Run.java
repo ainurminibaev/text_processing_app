@@ -8,11 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import pack2.config.CachingConfig;
 import pack2.config.CoreConfig;
+import pack2.model.Data;
 import pack2.repository.DataReader;
-import pack2.service.NgramService;
-import pack2.service.PerplexityService;
-import pack2.service.Replacer;
-import pack2.service.SentenceBuilder;
+import pack2.service.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,8 +39,10 @@ public class Run {
                     break;
                 case REPLACE:
                     replace(arguments);
-break;
-                    PERPLEXITY("perplexity");
+                    break;
+                case PERPLEXITY:
+                    perplexity(arguments);
+                    break;
             }
         } else {
             System.out.println("No arguments provided - do nothing!");
