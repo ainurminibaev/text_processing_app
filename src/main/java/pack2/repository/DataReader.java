@@ -10,7 +10,7 @@ import java.io.InputStream;
  */
 public interface DataReader {
 
-    Data restoreFromStream(InputStream inputStream) throws IOException;
+    Data restoreData(int ngramSize, String pathToFolder) throws IOException;
 
     Data getData();
 }

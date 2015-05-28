@@ -15,22 +15,22 @@ import static pack2.Constants.*;
 public class Learner {
 
 
-    public static void main(String[] args) throws FileNotFoundException {
-        int ngramSize;
-        String modelData;
-        String outputFile;
-        try {
-            ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            modelData = args[1].substring(MODEL_DATA_PARAM.length());
-            outputFile = args[2].substring(MODEL_DATA_OUT_PARAM.length());
-        } catch (Exception e) {
-            ngramSize = DEFAULT_NGRAM_SIZE;
-            modelData = "lotr.txt";
-            outputFile = "dump.bin";
-        }
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
-
-        NgramService ngramService = context.getBean(NgramService.class);
-        ngramService.buildNgram(ngramService.loadFile(modelData), ngramSize, outputFile);
-    }
+//    public static void main(String[] args) throws FileNotFoundException {
+//        int ngramSize;
+//        String modelData;
+//        String outputFile;
+//        try {
+//            ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
+//            modelData = args[1].substring(MODEL_DATA_PARAM.length());
+//            outputFile = args[2].substring(MODEL_DATA_OUT_PARAM.length());
+//        } catch (Exception e) {
+//            ngramSize = DEFAULT_NGRAM_SIZE;
+//            modelData = "lotr.txt";
+//            outputFile = "dump.bin";
+//        }
+//        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
+//
+//        NgramService ngramService = context.getBean(NgramService.class);
+//        ngramService.buildNgram(ngramService.loadFile(modelData), ngramSize, outputFile);
+//    }
 }

@@ -6,6 +6,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pack2.Util;
 import pack2.model.Data;
 import pack2.model.Ngram;
 import pack2.repository.DataReader;
@@ -25,35 +26,24 @@ public class SentenceBuilderImpl implements SentenceBuilder {
     public String buildSentence(int ngramSize) {
         Data data = dataReader.getData();
         if (data == null) throw new RuntimeException("NO DATA FOUND");
-        Map<Ngram, LinkedList<Ngram>> nextNgramMap = data.nextNgramMapMap.get(ngramSize);
-        Ngram ngram = data.getFirstNgram(ngramSize);
+        Map<Ngram, LinkedList<Ngram>> nextNgramMap = data.nextNgramMap;
+        Ngram ngram = data.getFirstNgram();
         StringBuilder sentence = new StringBuilder();
         appendNgram(sentence, ngram);
         do {
             Ngram newNgram = ngram.excludeFirstTokenNgram();
             List<Ngram> nextNgrams = nextNgramMap.get(newNgram);
             if (nextNgrams == null || nextNgrams.isEmpty()) return sentence.toString();
-            Random randomer = new Random();
-            double total = totalPropability(nextNgrams);
-            double probability = randomer.nextDouble() % total;
-            double sum = 0;
-            cycle:
-            for (Ngram nextNgram : nextNgrams) {
-                if (probability < sum + ngram.probability) {
-                    sentence.append(nextNgram.tokens[nextNgram.size - 1]).append(" ");
-                    ngram = nextNgram;
-                    break cycle;
-                } else {
-                    sum += ngram.probability;
-                }
-            }
+            Ngram nextNgram = Util.randomNgram(nextNgrams);
+            sentence.append(nextNgram.tokens[nextNgram.size - 1]).append(" ");
+            ngram = nextNgram;
         } while (!ngram.tokens[ngramSize - 1].equals("</s>"));
         return sentence.toString();
     }
 
     @Override
     public String buildSentence(String[] words, int ngramSize) {
-        List<Ngram> ngrams = dataReader.getData().ngramMap.get(ngramSize);
+        List<Ngram> ngrams = dataReader.getData().ngrams;
         ArrayList<String> wordsList = Lists.newArrayList(words);
         // сет из всех слов
         Multiset<String> initialMultiSet = Multisets.unmodifiableMultiset(HashMultiset.create(wordsList));
@@ -105,15 +95,6 @@ public class SentenceBuilderImpl implements SentenceBuilder {
             }
         }
         return sentenceBuilder.toString();
-    }
-
-    private double totalPropability(List<Ngram> nextNgrams) {
-        if (nextNgrams == null) return 0;
-        double sum = 0;
-        for (Ngram ngram : nextNgrams) {
-            sum += ngram.probability;
-        }
-        return sum;
     }
 
     private void appendNgram(StringBuilder sentence, Ngram ngram) {

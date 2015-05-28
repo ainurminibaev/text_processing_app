@@ -1,6 +1,7 @@
 package pack2.repository;
 
 import org.springframework.stereotype.Repository;
+import pack2.Constants;
 import pack2.model.Data;
 
 import java.io.*;
@@ -14,7 +15,16 @@ public class DataReaderImpl implements DataReader {
     private Data data;
 
     @Override
-    public Data restoreFromStream(InputStream inputStream) throws IOException {
+    public Data restoreData(int ngramSize, String pathToFolder) throws IOException {
+        return restoreFromStream(new FileInputStream(pathToFolder + File.separator + Constants.DATA_FILE_NAME + ngramSize + Constants.DATA_FILE_EXT));
+    }
+
+    @Override
+    public Data getData() {
+        return data;
+    }
+
+    private Data restoreFromStream(InputStream inputStream) throws IOException {
         try(ObjectInputStream ois = new ObjectInputStream(inputStream)) {
             data = (Data) ois.readObject();
             return data;
@@ -26,10 +36,5 @@ public class DataReaderImpl implements DataReader {
             System.out.println("looks like dump is corrupted: unexpected EOF was found, cannot restore: " + e.getMessage());
         }
         return null;
-    }
-
-    @Override
-    public Data getData() {
-        return data;
     }
 }

@@ -27,7 +27,7 @@ public class ReplacerImpl implements Replacer {
         for (int i = 0; i < words.length; i++) {
             if (words[i].equals("?")) {
                 List<Ngram> ngrams = buildAllNGrams(words, i, ngramSize);
-                List<Ngram> bestNgrams = findBestMatchedNgram(ngrams, ngramSize);
+                List<Ngram> bestNgrams = findBestMatchedNgram(ngrams);
 
                 Set<Ngram> bestSet = new HashSet<>(bestNgrams);
                 bestNgrams = Lists.newArrayList(bestSet);
@@ -172,8 +172,8 @@ public class ReplacerImpl implements Replacer {
         }));
     }
 
-    private List<Ngram> findBestMatchedNgram(List<Ngram> skippedNgrams, int ngramSize) {
-        List<Ngram> ngramsBySize = dataReader.getData().ngramMap.get(ngramSize);
+    private List<Ngram> findBestMatchedNgram(List<Ngram> skippedNgrams) {
+        List<Ngram> ngramsBySize = dataReader.getData().ngrams;
         List<Ngram> matchedNgrams = new ArrayList<>();
         for (Ngram ngram : ngramsBySize) {
             for (Ngram skippedNgram : skippedNgrams) {

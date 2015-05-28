@@ -10,12 +10,8 @@ import java.io.IOException;
  */
 public interface NgramService {
 
-
-    String loadFile(String file) throws FileNotFoundException;
-
-    Data buildNgram(String text, int ngramSize, String filename);
+    Data buildNgram(String inputFolder, int ngramSize, String outputFolder, double notUsedWordsProbability) throws FileNotFoundException;
 
     int getCountOfSubString(String left, String right, String[] words);
 
-    double calculatePerplexity(String trainingModelFile, String testTextFile) throws IOException;
 }
