@@ -158,7 +158,7 @@ public class ReplacerImpl implements Replacer {
         Collections.sort(bestNgrams, Collections.reverseOrder(new Comparator<Ngram>() {
             @Override
             public int compare(Ngram o1, Ngram o2) {
-                return ((Double)o1.probability).compareTo((Double)o2.probability);
+                return ((Double) o1.probability).compareTo((Double) o2.probability);
             }
         }));
     }
@@ -201,7 +201,7 @@ public class ReplacerImpl implements Replacer {
      *
      * @return
      */
-    private List<Ngram> buildAllNGrams(String[] words, int skipIndex, int ngramSize) {
+    public List<Ngram> buildAllNGrams(String[] words, int skipIndex, int ngramSize) {
         int startPos = skipIndex - ngramSize + 1;
 
         List<Ngram> ngrams = new ArrayList<>();
