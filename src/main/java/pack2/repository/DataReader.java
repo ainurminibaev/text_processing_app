@@ -13,4 +13,6 @@ public interface DataReader {
     Data restoreFromStream(InputStream inputStream) throws IOException;
 
     Data getData();
+
+    int getNgramSize();
 }

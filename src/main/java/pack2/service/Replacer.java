@@ -5,5 +5,5 @@ package pack2.service;
  */
 public interface Replacer {
 
-    String replace(String initialSequence, int guessNum, int ngramSize);
+    String replace(String initialSequence, int guessNum);
 }
