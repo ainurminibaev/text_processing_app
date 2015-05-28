@@ -43,6 +43,6 @@ public class NgramsCortege {
 
     @Override
     public String toString() {
-        return mNgrams.get(0).toString() + " & " + mNgrams.get(1).toString();
+        return mNgrams.get(0).toString() + ((mNgrams.size() > 1)?" & " + mNgrams.get(1).toString():"");
     }
 }

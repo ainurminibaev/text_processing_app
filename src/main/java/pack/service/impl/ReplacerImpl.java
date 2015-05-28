@@ -49,10 +49,14 @@ public class ReplacerImpl implements Replacer {
                     guessNum--;
                         System.out.println(printNgramCortege(nc, words, i));
                     }
+//                    for (NgramsCortege nc : ngramsCorteges) {
+//                        System.out.println(nc);
+//                    }
                 }
-                for (Ngram n : bestNgrams) {
-                    System.out.println(n);
-                }
+//                for (Ngram n : bestNgrams) {
+//                    System.out.println(n);
+//                }
+
             }
         }
         return null;
