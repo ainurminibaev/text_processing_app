@@ -8,11 +8,12 @@ import java.util.*;
 /**
  * Created by giylmi on 21.05.2015.
  */
-public class Data implements Serializable{
+public class Data implements Serializable {
 
-//    public List<String> tokens;
+    //    public List<String> tokens;
     public Map<Integer, List<Ngram>> ngramMap;
     public Map<Integer, Map<Ngram, LinkedList<Ngram>>> nextNgramMapMap;
+    public double probsOfOneOccurrenceNgrams;
 
     private transient List<Ngram> firstNgrams;
 
@@ -27,7 +28,7 @@ public class Data implements Serializable{
         if (firstNgrams != null) return firstNgrams.get(random.nextInt() % firstNgrams.size());
         firstNgrams = new ArrayList<>();
         List<Ngram> ngrams = ngramMap.get(ngramSize);
-        for (Ngram ngram: ngrams) {
+        for (Ngram ngram : ngrams) {
             if (ngram.tokens[0].equals(Constants.START_TOKEN))
                 firstNgrams.add(ngram);
         }
@@ -38,7 +39,8 @@ public class Data implements Serializable{
     public void addNgram(Ngram ngram) {
         if (ngramMap.get(ngram.size) == null) ngramMap.put(ngram.size, new LinkedList<Ngram>());
         ngramMap.get(ngram.size).add(ngram);
-        if (nextNgramMapMap.get(ngram.size) == null) nextNgramMapMap.put(ngram.size, new HashMap<Ngram, LinkedList<Ngram>>());
+        if (nextNgramMapMap.get(ngram.size) == null)
+            nextNgramMapMap.put(ngram.size, new HashMap<Ngram, LinkedList<Ngram>>());
         Map<Ngram, LinkedList<Ngram>> nextNgramsMap = nextNgramMapMap.get(ngram.size);
         Ngram excludeLast = ngram.excludeLastTokenNgram();
         LinkedList<Ngram> ngrams = nextNgramsMap.get(excludeLast);
@@ -47,8 +49,9 @@ public class Data implements Serializable{
     }
 
     private double EPS = 1e-10;
+
     private int bsearch(LinkedList<Ngram> ngrams, Ngram key) {
-        int i = -1, j = ngrams.size() -1;
+        int i = -1, j = ngrams.size() - 1;
         if (j == -1) return 0;
         while (i < j - 1) {
             int m = (i + j) / 2;

@@ -1,7 +1,8 @@
 package pack2.service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pack2.Constants;
@@ -24,6 +25,8 @@ public class NgramServiceImpl implements NgramService {
     private DataWriter dataWriter;
     @Autowired
     private DataReader dataReader;
+
+    private boolean enableGoodTuring;
 
     @Override
     public String loadFile(String file) throws FileNotFoundException {
@@ -82,10 +85,34 @@ public class NgramServiceImpl implements NgramService {
             }
         }
         System.out.println("All words have been parsed!");
+        if (enableGoodTuring) {
+            System.out.println("GT Smoothing");
+            goodTuringSmoothing(data);
+        }
         if (filename != null) {
             dataWriter.writeData(data, new File(filename));
         }
         return data;
+    }
+
+    private void goodTuringSmoothing(Data data) {
+        final Multiset<Ngram> ngramMultiset = HashMultiset.create(data.ngramMap.get(2));
+        ArrayList<Ngram> oneOccuranceNgrams = Lists.newArrayList(Iterables.transform(Iterables.filter(ngramMultiset.entrySet(), new Predicate<Multiset.Entry<Ngram>>() {
+            @Override
+            public boolean apply(Multiset.Entry<Ngram> input) {
+                return input.getCount() == 1;
+            }
+        }), new Function<Multiset.Entry<Ngram>, Ngram>() {
+            @Override
+            public Ngram apply(Multiset.Entry<Ngram> input) {
+                return input.getElement();
+            }
+        }));
+        double oneOccurrence = 0;
+        for (Ngram oneOccurrenceNgram : oneOccuranceNgrams) {
+            oneOccurrence += oneOccurrenceNgram.probability;
+        }
+        data.probsOfOneOccurrenceNgrams = oneOccurrence;
     }
 
     @Override
