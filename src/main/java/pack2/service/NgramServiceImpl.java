@@ -60,7 +60,7 @@ public class NgramServiceImpl implements NgramService {
             }
             if (canBeNgram) {
                 ngram.fillTokens(tokens);
-                ngram.probability = calculateNgramProvability(ngram, words, wordsSet.size());
+                ngram.probability = calculateNgramProbability(ngram, words, wordsSet.size());
                 data.addNgram(ngram);
             }
 
@@ -94,7 +94,7 @@ public class NgramServiceImpl implements NgramService {
      *
      * @return
      */
-    private Double calculateNgramProvability(Ngram ngram, String[] words, int wordSetSize) {
+    private Double calculateNgramProbability(Ngram ngram, String[] words, int wordSetSize) {
         double totalProbab = 1;
         for (int i = 0; i < ngram.tokens.length - 1; i++) {
             String[] tokens = ngram.tokens;
