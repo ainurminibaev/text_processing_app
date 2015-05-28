@@ -9,4 +9,5 @@ public interface Defaults {
     String outputFolder = "output";
     Integer ngramSize = 3;
     Double unknownWordFreq = 0.000364498;
+    Integer guessNum = 3;
 }

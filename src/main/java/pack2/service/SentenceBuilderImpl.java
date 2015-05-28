@@ -23,7 +23,7 @@ public class SentenceBuilderImpl implements SentenceBuilder {
     private DataReader dataReader;
 
     @Override
-    public String buildSentence(int ngramSize) {
+    public String buildSentence() {
         Data data = dataReader.getData();
         if (data == null) throw new RuntimeException("NO DATA FOUND");
         Map<Ngram, LinkedList<Ngram>> nextNgramMap = data.nextNgramMap;
@@ -37,19 +37,21 @@ public class SentenceBuilderImpl implements SentenceBuilder {
             Ngram nextNgram = Util.randomNgram(nextNgrams);
             sentence.append(nextNgram.tokens[nextNgram.size - 1]).append(" ");
             ngram = nextNgram;
-        } while (!ngram.tokens[ngramSize - 1].equals("</s>"));
+        } while (!ngram.tokens[data.ngramSize - 1].equals("</s>"));
         return sentence.toString();
     }
 
     @Override
-    public String buildSentence(String[] words, int ngramSize) {
-        List<Ngram> ngrams = dataReader.getData().ngrams;
+    public String buildSentence(String[] words) {
+        Data data = dataReader.getData();
+        List<Ngram> ngrams = data.ngrams;
         ArrayList<String> wordsList = Lists.newArrayList(words);
         // сет из всех слов
         Multiset<String> initialMultiSet = Multisets.unmodifiableMultiset(HashMultiset.create(wordsList));
         // сет из которого будем постепенно удалять слова
         Multiset<String> wordsSet = HashMultiset.create(wordsList);
         List<Ngram> generatedSentence = new ArrayList<>();
+        Integer ngramSize = data.ngramSize;
         int maxMatchingSize = ngramSize;
         while (!wordsSet.isEmpty()) {
             //находим лучший Ngram для текущего множества

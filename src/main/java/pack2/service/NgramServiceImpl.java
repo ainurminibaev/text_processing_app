@@ -134,7 +134,6 @@ public class NgramServiceImpl implements NgramService {
                 min = wordProbability;
                 minToken = token;
             }
-            logger.info("%s —- %.9f \n", token, wordProbability);
             //удаляем старое слово, чтобы вставить очищенное
             wordsList.remove(i);
             token = token.replaceAll("[^\\w,]", "");
