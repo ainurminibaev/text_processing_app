@@ -1,7 +1,8 @@
 package pack2.service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,9 @@ import pack2.model.Ngram;
 import pack2.repository.DataWriter;
 import pack2.repository.TextParser;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Created by giylmi on 22.05.2015.
@@ -28,6 +30,8 @@ public class NgramServiceImpl implements NgramService {
     private DataWriter dataWriter;
     @Autowired
     private TextParser textParser;
+
+    private boolean enableGoodTuring;
 
     @Override
     public Data buildNgram(String inputFolder, int ngramSize, String outputFolder, double notUsedWordsProbability) throws FileNotFoundException {
@@ -73,7 +77,32 @@ public class NgramServiceImpl implements NgramService {
         if (outputFolder != null) {
             dataWriter.writeData(data, outputFolder);
         }
+        System.out.println("All words have been parsed!");
+        if (enableGoodTuring) {
+            System.out.println("GT Smoothing");
+            goodTuringSmoothing(data);
+        }
         return data;
+    }
+
+    private void goodTuringSmoothing(Data data) {
+        final Multiset<Ngram> ngramMultiset = HashMultiset.create(data.ngrams);
+        ArrayList<Ngram> oneOccuranceNgrams = Lists.newArrayList(Iterables.transform(Iterables.filter(ngramMultiset.entrySet(), new Predicate<Multiset.Entry<Ngram>>() {
+            @Override
+            public boolean apply(Multiset.Entry<Ngram> input) {
+                return input.getCount() == 1;
+            }
+        }), new Function<Multiset.Entry<Ngram>, Ngram>() {
+            @Override
+            public Ngram apply(Multiset.Entry<Ngram> input) {
+                return input.getElement();
+            }
+        }));
+        double oneOccurrence = 0;
+        for (Ngram oneOccurrenceNgram : oneOccuranceNgrams) {
+            oneOccurrence += oneOccurrenceNgram.probability;
+        }
+        data.probsOfOneOccurrenceNgrams = oneOccurrence;
     }
 
     @Override
@@ -87,6 +116,8 @@ public class NgramServiceImpl implements NgramService {
         }
         return count;
     }
+
+
 
     /**
      * Расчет вероятность для Ngram
@@ -115,7 +146,7 @@ public class NgramServiceImpl implements NgramService {
      * @param wordsList
      */
     private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
-    //для начала нужно иметь эти данные для "сырых" строк
+        //для начала нужно иметь эти данные для "сырых" строк
         String[] wordsArray = wordsList.toArray(new String[wordsList.size()]);
         HashSet<String> wordsSet = Sets.newHashSet(wordsArray);
         double min = Double.MAX_VALUE;
