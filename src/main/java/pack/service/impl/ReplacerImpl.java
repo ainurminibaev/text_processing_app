@@ -49,15 +49,10 @@ public class ReplacerImpl implements Replacer {
                     guessNum--;
                         System.out.println(printNgramCortege(nc, words, i));
                     }
-//
                 }
-//                for (Ngram n : bestNgrams) {
-//                    if (guessNum == 0) {
-//                        break;
-//                    }
-//                    guessNum--;
-//                    System.out.println(n);
-//                }
+                for (Ngram n : bestNgrams) {
+                    System.out.println(n);
+                }
             }
         }
         return null;
@@ -144,7 +139,6 @@ public class ReplacerImpl implements Replacer {
                         regex.append("([\\S]+) ");
                     } else
                         regex.append(words[position + j] + " ");
-
                 } else {
                     createRegexSuccess = false;
                     break;
@@ -155,6 +149,9 @@ public class ReplacerImpl implements Replacer {
                 patterns.add(Pattern.compile(regex.toString()));
             }
         }
+        String r = (patterns.get(patterns.size() - 1).toString()).replaceAll("\\.\\*\\\\s","");
+        if (!r.equals(patterns.get(patterns.size() - 1).toString()))
+            patterns.add(Pattern.compile(r.toString()));
         return patterns;
     }
 
