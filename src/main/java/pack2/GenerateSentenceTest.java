@@ -33,6 +33,6 @@ public class GenerateSentenceTest {
 
         DataReader reader = context.getBean(DataReader.class);
         reader.restoreFromStream(new FileInputStream(inputFile));
-        System.out.println(sentenceBuilder.buildSentence(ngramSize));
+        System.out.println(sentenceBuilder.buildSentence());
     }
 }

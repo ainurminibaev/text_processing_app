@@ -21,7 +21,8 @@ public class ReplacerImpl implements Replacer {
     DataReader dataReader;
 
     @Override
-    public String replace(String initialSentence, int guessNum, int ngramSize) {
+    public String replace(String initialSentence, int guessNum) {
+        int ngramSize = dataReader.getNgramSize();
         System.out.println(initialSentence);
         String[] words = initialSentence.split("\\s");
         for (int i = 0; i < words.length; i++) {
@@ -158,7 +159,7 @@ public class ReplacerImpl implements Replacer {
         Collections.sort(bestNgrams, Collections.reverseOrder(new Comparator<Ngram>() {
             @Override
             public int compare(Ngram o1, Ngram o2) {
-                return ((Double)o1.probability).compareTo((Double)o2.probability);
+                return ((Double) o1.probability).compareTo((Double) o2.probability);
             }
         }));
     }

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 import pack2.model.Data;
 
 import java.io.*;
+import java.util.Iterator;
 
 /**
  * Created by giylmi on 21.05.2015.
@@ -15,7 +16,7 @@ public class DataReaderImpl implements DataReader {
 
     @Override
     public Data restoreFromStream(InputStream inputStream) throws IOException {
-        try(ObjectInputStream ois = new ObjectInputStream(inputStream)) {
+        try (ObjectInputStream ois = new ObjectInputStream(inputStream)) {
             data = (Data) ois.readObject();
             return data;
         } catch (InvalidClassException e) {
@@ -31,5 +32,14 @@ public class DataReaderImpl implements DataReader {
     @Override
     public Data getData() {
         return data;
+    }
+
+    @Override
+    public int getNgramSize() {
+        Iterator<Integer> ngramSizesIterator = data.ngramMap.keySet().iterator();
+        if (ngramSizesIterator.hasNext()) {
+            return ngramSizesIterator.next();
+        }
+        throw new IllegalStateException("No data available in model");
     }
 }

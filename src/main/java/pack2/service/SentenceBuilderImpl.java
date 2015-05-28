@@ -22,7 +22,8 @@ public class SentenceBuilderImpl implements SentenceBuilder {
     private DataReader dataReader;
 
     @Override
-    public String buildSentence(int ngramSize) {
+    public String buildSentence() {
+        int ngramSize = dataReader.getNgramSize();
         Data data = dataReader.getData();
         if (data == null) throw new RuntimeException("NO DATA FOUND");
         Map<Ngram, LinkedList<Ngram>> nextNgramMap = data.nextNgramMapMap.get(ngramSize);
@@ -52,7 +53,8 @@ public class SentenceBuilderImpl implements SentenceBuilder {
     }
 
     @Override
-    public String buildSentence(String[] words, int ngramSize) {
+    public String buildSentence(String[] words) {
+        int ngramSize = dataReader.getNgramSize();
         List<Ngram> ngrams = dataReader.getData().ngramMap.get(ngramSize);
         ArrayList<String> wordsList = Lists.newArrayList(words);
         // сет из всех слов
