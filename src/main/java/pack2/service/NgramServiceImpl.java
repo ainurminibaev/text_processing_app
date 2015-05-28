@@ -143,7 +143,7 @@ public class NgramServiceImpl implements NgramService {
      *
      * @throws IOException
      */
-    public double calculatePerplexity(String trainingModelFile, String testTextFile) throws IOException {
+    public double calculatePerplexity(String testTextFile) throws IOException {
         Data trainingData = dataReader.getData();
         Iterator<Integer> ngramSizeIterator = trainingData.ngramMap.keySet().iterator();
         Integer ngramSize = null;
@@ -153,22 +153,24 @@ public class NgramServiceImpl implements NgramService {
         if (ngramSize == null) {
             throw new IllegalStateException("No Ngrams");
         }
+        System.out.println("Reading data from test model: START");
         Data testData = buildNgram(loadFile(testTextFile), ngramSize, null);
-        dataReader.restoreFromStream(new FileInputStream(trainingModelFile));
         List<Ngram> trainingNgrams = trainingData.ngramMap.get(ngramSize);
         List<Ngram> testNgrams = testData.ngramMap.get(ngramSize);
+        System.out.println("Reading data from test model: END");
+        System.out.println("Calculating perplexity");
         double perplexity = 0;
         for (Ngram testNgram : testNgrams) {
             for (Ngram trainingNgram : trainingNgrams) {
                 if (testNgram.equals(trainingNgram)) {
-                    perplexity = Math.log10(trainingNgram.probability) / Math.log10(2);
+                    perplexity += testNgram.probability * Math.log10(trainingNgram.probability);
                 }
             }
         }
-        // Divide with minus of the test corpus size
-        perplexity /= -1 * testNgrams.size();
-        // calculate 2 power the previous result
-        perplexity = Math.pow(2, perplexity);
+//        // Divide with minus of the test corpus size
+//        perplexity /= -1 * testNgrams.size();
+//        // calculate 2 power the previous result
+//        perplexity = Math.pow(2, perplexity);
         return perplexity;
     }
 }

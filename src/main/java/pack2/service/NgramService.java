@@ -17,5 +17,5 @@ public interface NgramService {
 
     int getCountOfSubString(String left, String right, String[] words);
 
-    double calculatePerplexity(String trainingModelFile, String testTextFile) throws IOException;
+    double calculatePerplexity(String testTextFile) throws IOException;
 }
