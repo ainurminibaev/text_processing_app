@@ -22,7 +22,7 @@ public class DataWriterImpl implements DataWriter {
     @Override
     public boolean writeData(Data data, String pathToFolder) {
         logger.info("Writing Data to folder=" + pathToFolder);
-        if (new File(pathToFolder).mkdirs()){
+        if (new File(pathToFolder).mkdirs()) {
             String name = pathToFolder + File.separator + Constants.DATA_FILE_NAME + data.ngramSize + Constants.DATA_FILE_EXT;
             try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(name))) {
                 oos.writeObject(data);

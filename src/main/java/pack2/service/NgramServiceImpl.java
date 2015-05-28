@@ -1,12 +1,10 @@
 package pack2.service;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -16,10 +14,9 @@ import pack2.model.Ngram;
 import pack2.repository.DataWriter;
 import pack2.repository.TextParser;
 
-import java.io.*;
-import java.net.URL;
-import java.text.BreakIterator;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Created by giylmi on 22.05.2015.
@@ -89,7 +86,7 @@ public class NgramServiceImpl implements NgramService {
     }
 
     private void goodTuringSmoothing(Data data) {
-        final Multiset<Ngram> ngramMultiset = HashMultiset.create(data.ngramMap.get(2));
+        final Multiset<Ngram> ngramMultiset = HashMultiset.create(data.ngrams);
         ArrayList<Ngram> oneOccuranceNgrams = Lists.newArrayList(Iterables.transform(Iterables.filter(ngramMultiset.entrySet(), new Predicate<Multiset.Entry<Ngram>>() {
             @Override
             public boolean apply(Multiset.Entry<Ngram> input) {
@@ -120,6 +117,8 @@ public class NgramServiceImpl implements NgramService {
         return count;
     }
 
+
+
     /**
      * Расчет вероятность для Ngram
      * Pn = P(w1,w2)*P(w2,w3) ....
@@ -147,7 +146,7 @@ public class NgramServiceImpl implements NgramService {
      * @param wordsList
      */
     private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
-    //для начала нужно иметь эти данные для "сырых" строк
+        //для начала нужно иметь эти данные для "сырых" строк
         String[] wordsArray = wordsList.toArray(new String[wordsList.size()]);
         HashSet<String> wordsSet = Sets.newHashSet(wordsArray);
         double min = Double.MAX_VALUE;

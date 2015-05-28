@@ -5,10 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import pack2.Util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.net.URL;
 import java.text.BreakIterator;
 import java.util.Locale;
 
@@ -29,16 +27,16 @@ public class TextParserImpl implements TextParser {
         if (files == null) {
             throw new RuntimeException("No files in folder!");
         }
-        for (File file: files){
+        for (File file : files) {
             logger.info("Reading text from file=" + file.getName());
-            text.append(loadFile(file));
+            text.append(load(file));
         }
         logger.info("Text has been read");
         return text.toString();
     }
 
-    private String loadFile(File file) throws FileNotFoundException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    private String loadStream(Reader in) throws FileNotFoundException {
+        try (BufferedReader reader = new BufferedReader(in)) {
             String line = null;
             StringBuilder textBuilder = new StringBuilder();
             BreakIterator sentenceIterator = BreakIterator.getSentenceInstance(Locale.ENGLISH);
@@ -55,4 +53,21 @@ public class TextParserImpl implements TextParser {
         }
         return "";
     }
+
+    @Override
+    public String load(String file) throws FileNotFoundException {
+        return loadStream(new FileReader(file));
+    }
+
+    @Override
+    public String load(File file) throws FileNotFoundException {
+        return loadStream(new FileReader(file));
+    }
+
+    @Override
+    public String load(URL url) throws IOException {
+        return loadStream(new InputStreamReader(url.openStream()));
+    }
+
+
 }
