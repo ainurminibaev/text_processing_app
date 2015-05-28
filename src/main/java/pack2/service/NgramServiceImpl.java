@@ -15,8 +15,7 @@ import pack2.repository.DataWriter;
 import pack2.repository.TextParser;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Created by giylmi on 22.05.2015.
@@ -32,6 +31,8 @@ public class NgramServiceImpl implements NgramService {
     private TextParser textParser;
 
     private boolean enableGoodTuring;
+    private HashMultiset<String> wordsMap;
+    private HashMultiset<Ngram> bigramsMap;
 
     @Override
     public Data buildNgram(String inputFolder, int ngramSize, String outputFolder, double notUsedWordsProbability) throws FileNotFoundException {
@@ -116,11 +117,35 @@ public class NgramServiceImpl implements NgramService {
 //                count++;
 //            }
 //        }
-//        return count;
-        return 0;
+        if (right == null) {
+            return getWordsCountMap(words).count(left);
+        }
+        Ngram ngram = new Ngram(2);
+        ngram.fillTokens(left, right);
+        return getBigramCountMap(words).count(ngram);
     }
 
+    public Multiset<Ngram> getBigramCountMap(String[] words) {
+        if (bigramsMap == null) {
+            List<Ngram> bigrams = new ArrayList<>();
+            for (int i = 0; i < words.length - 1; i++) {
+                Ngram ngram = new Ngram(2);
+                ngram.fillTokens(words[i], words[i + 1]);
+                bigrams.add(ngram);
+            }
+            System.out.println("build bigram map");
+            bigramsMap = HashMultiset.create(bigrams);
+        }
+        return bigramsMap;
+    }
 
+    public Multiset<String> getWordsCountMap(String[] words) {
+        if (wordsMap == null) {
+            System.out.println("build word map");
+            wordsMap = HashMultiset.create(Arrays.asList(words));
+        }
+        return wordsMap;
+    }
 
     /**
      * Расчет вероятность для Ngram

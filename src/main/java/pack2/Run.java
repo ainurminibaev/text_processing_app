@@ -5,24 +5,16 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import pack2.config.CachingConfig;
 import pack2.config.CoreConfig;
 import pack2.model.Data;
 import pack2.repository.DataReader;
-import pack2.service.NgramService;
-import pack2.service.PerplexityService;
-import pack2.service.Replacer;
-import pack2.service.SentenceBuilder;
+import pack2.service.*;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by adel on 28.05.15.
@@ -35,12 +27,22 @@ public class Run {
         if (args != null && args.length > 0) {
             Arguments arguments = Arguments.resolveArguments(args);
             logger.info("Resolved arguments: " + arguments);
-            switch (arguments.command){
-                case LEARN: learn(arguments); break;
-                case RESTORE_SENTENCE: restoreSentence(arguments); break;
-                case BUILD_SENTENCE: buildSentence(arguments); break;
-                case REPLACE: replace(arguments); break;
-                case PERPLEXITY: perplexity(arguments);
+            switch (arguments.command) {
+                case LEARN:
+                    learn(arguments);
+                    break;
+                case RESTORE_SENTENCE_SHUFFLE:
+                    restoreSentence(arguments);
+                    break;
+                case RESTORE_SENTENCE_RANDOM:
+                    buildSentence(arguments);
+                    break;
+                case REPLACE:
+                    replace(arguments);
+                    break;
+                case PERPLEXITY:
+                    perplexity(arguments);
+                    break;
             }
         } else {
             System.out.println("No arguments provided - do nothing!");
@@ -81,7 +83,7 @@ public class Run {
         Replacer replacer = context.getBean(Replacer.class);
         try {
             restoreData(arguments, dataReader);
-            String sentence = arguments.getArgument("sentence");
+            String sentence = arguments.getArgument("sentence", Defaults.REPLACER_ARG);
             if (sentence == null || sentence.isEmpty()) {
                 logger.error("No sentence provided");
             } else {
@@ -117,20 +119,20 @@ public class Run {
         SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
         DataReader dataReader = context.getBean(DataReader.class);
 
-        String[] words = arguments.getArgument("words", null, new Function<String, String[]>() {
+        String[] words = arguments.getArgument("words", Defaults.SHUFFLE_TEXT, new Function<String, String[]>() {
             @Override
             public String[] apply(String s) {
                 return s.split(",");
             }
         });
-        if (words == null){
+        if (words == null) {
             logger.error("No words provided");
         } else {
             try {
                 restoreData(arguments, dataReader);
-                logger.info("Building sentence from words=" + words);
+                logger.info("Building sentence from words=" + Arrays.toString(words));
                 logger.info(sentenceBuilder.buildSentence(words));
-                logger.info("Sentence built");
+                logger.info("Sentence built end");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -179,16 +181,16 @@ public class Run {
         return new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
     }
 
-    private static class Arguments{
+    private static class Arguments {
 
         Command command;
         private Map<String, String> argsMap = new HashMap<>();
 
-        public String getArgument(String key){
+        public String getArgument(String key) {
             return argsMap.get(key);
         }
 
-        public String getArgument(String key, String defaultValue){
+        public String getArgument(String key, String defaultValue) {
             String s = argsMap.get(key);
             if (s == null) {
                 logger.info("Reverting to default value for key=" + key + ", default=" + defaultValue);
@@ -196,7 +198,8 @@ public class Run {
             }
             return s;
         }
-        public <T> T getArgument(String key, T defaultValue, Function<String, T> transformFunction){
+
+        public <T> T getArgument(String key, T defaultValue, Function<String, T> transformFunction) {
             String s = argsMap.get(key);
             if (s == null) {
                 logger.info("Reverting to default value for key=" + key + ", default=" + defaultValue);
@@ -213,8 +216,10 @@ public class Run {
                     '}';
         }
 
-        private Arguments(){}
-        public static Arguments resolveArguments(String[] args){
+        private Arguments() {
+        }
+
+        public static Arguments resolveArguments(String[] args) {
             Arguments arguments = new Arguments();
             String name = args[0];
             try {
@@ -224,15 +229,15 @@ public class Run {
             }
             for (int i = 1; i < args.length; i++) {
                 int j = -1;
-                while (args[i].charAt(j + 1) == '-'){
+                while (args[i].charAt(j + 1) == '-') {
                     j++;
                 }
-                if (j > - 1) {
+                if (j > -1) {
                     String argument = args[i].substring(j + 1);
                     String[] keyValuePair = argument.split("=");
                     String key = keyValuePair[0];
                     StringBuilder valueBuilder = new StringBuilder();
-                    for (int k = 1; k < keyValuePair.length; k++){
+                    for (int k = 1; k < keyValuePair.length; k++) {
                         valueBuilder.append(keyValuePair[k]);
                     }
                     arguments.argsMap.put(key, valueBuilder.toString());
@@ -243,14 +248,15 @@ public class Run {
             return arguments;
         }
 
-        enum Command{
+        enum Command {
             LEARN("learn"),
-            RESTORE_SENTENCE("restore-sentence"),
-            BUILD_SENTENCE("build-sentence"),
+            RESTORE_SENTENCE_RANDOM("restore-sentence-random"),
+            RESTORE_SENTENCE_SHUFFLE("restore-sentence-shuffle"),
             REPLACE("replace"),
             PERPLEXITY("perplexity");
 
             private String name;
+
             Command(String name) {
                 this.name = name;
             }
@@ -269,7 +275,7 @@ public class Run {
             }
 
             public static Command byName(String s) {
-                for (Command c: Command.values())
+                for (Command c : Command.values())
                     if (c.name.equals(s.toLowerCase()))
                         return c;
                 throw new RuntimeException();
