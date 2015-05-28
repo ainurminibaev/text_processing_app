@@ -12,4 +12,5 @@ public interface Defaults {
     Integer guessNum = 3;
     String REPLACER_ARG = "He asked ? to let";
     String[] SHUFFLE_TEXT = "when you want to see any thing".split(" ");
+    String testFolder = "input1";
 }

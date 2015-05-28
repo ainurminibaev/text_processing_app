@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import pack2.Constants;
+import pack2.Util;
 import pack2.model.Data;
 
 import java.io.*;
@@ -20,7 +21,7 @@ public class DataReaderImpl implements DataReader {
 
     @Override
     public Data restoreData(int ngramSize, String pathToFolder){
-        String name = pathToFolder + File.separator + Constants.DATA_FILE_NAME + ngramSize + Constants.DATA_FILE_EXT;
+        String name = Util.buildFileName(pathToFolder, ngramSize);
         try {
             return restoreFromStream(new FileInputStream(name));
         } catch (FileNotFoundException e) {

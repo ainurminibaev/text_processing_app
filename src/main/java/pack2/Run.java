@@ -10,6 +10,7 @@ import pack2.config.CachingConfig;
 import pack2.config.CoreConfig;
 import pack2.repository.DataReader;
 import pack2.service.NgramService;
+import pack2.service.PerplexityService;
 import pack2.service.Replacer;
 import pack2.service.SentenceBuilder;
 
@@ -40,9 +41,39 @@ public class Run {
                     break;
                 case REPLACE:
                     replace(arguments);
+break;
+                    PERPLEXITY("perplexity");
             }
         } else {
             System.out.println("No arguments provided - do nothing!");
+        }
+    }
+
+    private static void perplexity(Arguments arguments) {
+        AnnotationConfigApplicationContext context = getAnnotationConfigApplicationContext();
+        DataReader dataReader = context.getBean(DataReader.class);
+        PerplexityService perplexityService = context.getBean(PerplexityService.class);
+        NgramService ngramService = context.getBean(NgramService.class);
+        try {
+            restoreData(arguments, dataReader);
+            String input = arguments.getArgument("test-dir", Defaults.testFolder);
+            Integer ngramSize = arguments.getArgument("n", Defaults.ngramSize, new Function<String, Integer>() {
+                @Override
+                public Integer apply(String s) {
+                    return Integer.valueOf(s);
+                }
+            });
+            Double notUsedWordsProbability = arguments.getArgument("unknown-word-freq", Defaults.unknownWordFreq, new Function<String, Double>() {
+                @Override
+                public Double apply(String s) {
+                    return Double.valueOf(s);
+                }
+            });
+            logger.info("Learning test data");
+            Data testData = ngramService.buildNgram(input, ngramSize, null, notUsedWordsProbability);
+            logger.info("perplexity: " + perplexityService.calculatePerplexity(dataReader.getData(), testData));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -221,7 +252,8 @@ public class Run {
             LEARN("learn"),
             RESTORE_SENTENCE_RANDOM("restore-sentence-random"),
             RESTORE_SENTENCE_SHUFFLE("restore-sentence-shuffle"),
-            REPLACE("replace");
+            REPLACE("replace"),
+            PERPLEXITY("perplexity");
 
             private String name;
 
