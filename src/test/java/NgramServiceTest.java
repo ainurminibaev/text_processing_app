@@ -21,7 +21,7 @@ public class NgramServiceTest extends BaseTest {
         try (PrintStream out = new PrintStream(new FileOutputStream(fname))) {
             out.print(FILE_DATA);
         }
-        String result = ngramService.loadFile(fname);
+        String result = ngramService.load(fname);
         Assert.assertNotSame(FILE_DATA, result);
         Assert.assertTrue(result.contains(Constants.END_TOKEN));
         Assert.assertTrue(result.contains(Constants.START_TOKEN));

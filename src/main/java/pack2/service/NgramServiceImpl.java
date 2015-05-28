@@ -13,6 +13,7 @@ import pack2.repository.DataReader;
 import pack2.repository.DataWriter;
 
 import java.io.*;
+import java.net.URL;
 import java.text.BreakIterator;
 import java.util.*;
 
@@ -29,8 +30,19 @@ public class NgramServiceImpl implements NgramService {
     private boolean enableGoodTuring;
 
     @Override
-    public String loadFile(String file) throws FileNotFoundException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    public String load(String file) throws FileNotFoundException {
+        File f = new File(file);
+        return loadStream(new FileReader(file));
+    }
+
+    @Override
+    public String load(URL url) throws IOException {
+        return loadStream(new InputStreamReader(url.openStream()));
+    }
+
+
+    private String loadStream(Reader in) throws FileNotFoundException {
+        try (BufferedReader reader = new BufferedReader(in)) {
             String line = null;
             StringBuilder textBuilder = new StringBuilder();
             BreakIterator sentenceIterator = BreakIterator.getSentenceInstance(Locale.ENGLISH);
@@ -180,7 +192,7 @@ public class NgramServiceImpl implements NgramService {
         if (ngramSize == null) {
             throw new IllegalStateException("No Ngrams");
         }
-        Data testData = buildNgram(loadFile(testTextFile), ngramSize, null);
+        Data testData = buildNgram(load(testTextFile), ngramSize, null);
         dataReader.restoreFromStream(new FileInputStream(trainingModelFile));
         List<Ngram> trainingNgrams = trainingData.ngramMap.get(ngramSize);
         List<Ngram> testNgrams = testData.ngramMap.get(ngramSize);

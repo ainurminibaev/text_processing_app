@@ -31,6 +31,6 @@ public class Learner {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
 
         NgramService ngramService = context.getBean(NgramService.class);
-        ngramService.buildNgram(ngramService.loadFile(modelData), ngramSize, outputFile);
+        ngramService.buildNgram(ngramService.load(modelData), ngramSize, outputFile);
     }
 }
