@@ -142,6 +142,9 @@ public class ReplacerImpl implements Replacer {
                 patterns.add(Pattern.compile(regex.toString()));
             }
         }
+        String r = (patterns.get(patterns.size() - 1).toString()).replaceAll("\\.\\*\\\\s", "");
+        if (!r.equals(patterns.get(patterns.size() - 1).toString()))
+            patterns.add(Pattern.compile(r.toString()));
         return patterns;
     }
 
@@ -158,7 +161,7 @@ public class ReplacerImpl implements Replacer {
         Collections.sort(bestNgrams, Collections.reverseOrder(new Comparator<Ngram>() {
             @Override
             public int compare(Ngram o1, Ngram o2) {
-                return ((Double)o1.probability).compareTo((Double)o2.probability);
+                return ((Double) o1.probability).compareTo((Double) o2.probability);
             }
         }));
     }
