@@ -7,4 +7,5 @@ public interface Constants {
 
     static String START_TOKEN = "<s>";
     static String END_TOKEN = "</s>";
+    String GUESS_NUM_PARAM = "--guess-num=";
 }

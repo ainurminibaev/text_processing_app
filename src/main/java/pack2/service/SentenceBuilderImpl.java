@@ -1,15 +1,17 @@
 package pack2.service;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pack.model.Token;
 import pack2.model.Ngram;
 import pack2.model.Data;
 import pack2.repository.DataReader;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by giylmi on 21.05.2015.
@@ -28,7 +30,7 @@ public class SentenceBuilderImpl implements SentenceBuilder {
         Ngram ngram = data.getFirstNgram(ngramSize);
         StringBuilder sentence = new StringBuilder();
         appendNgram(sentence, ngram);
-        do{
+        do {
             Ngram newNgram = ngram.excludeFirstTokenNgram();
             List<Ngram> nextNgrams = nextNgramMap.get(newNgram);
             if (nextNgrams == null || nextNgrams.isEmpty()) return sentence.toString();
@@ -36,31 +38,155 @@ public class SentenceBuilderImpl implements SentenceBuilder {
             double total = totalPropability(nextNgrams);
             double probability = randomer.nextDouble() % total;
             double sum = 0;
-            cycle: for (Ngram nextNgram: nextNgrams) {
+            cycle:
+            for (Ngram nextNgram : nextNgrams) {
                 if (probability < sum + ngram.probability) {
                     sentence.append(nextNgram.tokens[nextNgram.size - 1]).append(" ");
                     ngram = nextNgram;
                     break cycle;
-                }
-                else {
+                } else {
                     sum += ngram.probability;
                 }
             }
-        } while(!ngram.tokens[ngramSize - 1].equals("</s>"));
+        } while (!ngram.tokens[ngramSize - 1].equals("</s>"));
         return sentence.toString();
+    }
+
+    @Override
+    public String buildSentence(String[] words, int ngramSize) {
+        List<Ngram> ngrams = dataReader.getData().ngramMap.get(ngramSize);
+        ArrayList<String> wordsList = Lists.newArrayList(words);
+        // сет из всех слов
+        Multiset<String> initialMultiSet = Multisets.unmodifiableMultiset(HashMultiset.create(wordsList));
+        // сет из которого будем постепенно удалять слова
+        Multiset<String> wordsSet = HashMultiset.create(wordsList);
+        List<Ngram> generatedSentence = new ArrayList<>();
+        int maxMatchingSize = ngramSize;
+        while (!wordsSet.isEmpty()) {
+            //находим лучший Ngram для текущего множества
+            Ngram ngram = findBestMatchingAndClean(ngrams, wordsSet, maxMatchingSize);
+            //не нашли ищем меньший энграм
+            if (ngram == null && maxMatchingSize > 0) {
+                maxMatchingSize--;
+                continue;
+            } else if (ngram == null && maxMatchingSize == 0) {
+                //create Ngram from all other's
+                Ngram tailNgram = new Ngram(ngramSize);
+                String[] tokens = new String[wordsSet.size()];
+                wordsSet.toArray(tokens);
+                tailNgram.tokens = tokens;
+                wordsSet.clear();
+                break;
+            }
+            if (maxMatchingSize < ngramSize) {
+                replaceFreeOccurances(ngram, initialMultiSet, wordsSet);
+            }
+            //уменьшаем множество слов на те ngram которые были найдены
+            cleanWordSet(ngram, wordsSet);
+            generatedSentence.add(ngram);
+        }
+
+        return getSentenceFromNgram(generatedSentence, HashMultiset.create(wordsList));
+    }
+
+    /**
+     * Из энграм генерим предложение
+     *
+     * @return
+     */
+    private String getSentenceFromNgram(List<Ngram> generatedSentence, Multiset<String> wordSet) {
+        StringBuilder sentenceBuilder = new StringBuilder();
+        for (Ngram ngram : generatedSentence) {
+            for (String token : ngram.tokens) {
+                if (wordSet.contains(token)) {
+                    sentenceBuilder.append(token);
+                    sentenceBuilder.append(' ');
+                    wordSet.remove(token);
+                }
+            }
+        }
+        return sentenceBuilder.toString();
     }
 
     private double totalPropability(List<Ngram> nextNgrams) {
         if (nextNgrams == null) return 0;
         double sum = 0;
-        for (Ngram ngram: nextNgrams) {
+        for (Ngram ngram : nextNgrams) {
             sum += ngram.probability;
         }
         return sum;
     }
 
     private void appendNgram(StringBuilder sentence, Ngram ngram) {
-        for (String token: ngram.tokens)
+        for (String token : ngram.tokens)
             sentence.append(token).append(" ");
     }
+
+    /**
+     * Находим лучший Ngram
+     *
+     * @param ngrams
+     * @param wordsSet
+     * @param ngramSize
+     * @return
+     */
+    private Ngram findBestMatchingAndClean(List<Ngram> ngrams, Multiset<String> wordsSet, int ngramSize) {
+        Ngram maxMatching = null;
+        for (Ngram ngram : ngrams) {
+            if (ngramContainsAllNeededTokens(ngram, wordsSet, ngramSize)) {
+                if (maxMatching == null || (((Double) ngram.probability).compareTo((Double) maxMatching.probability) > 0 && ((Double) ngram.probability).compareTo(1.0) <= 0)) {
+                    maxMatching = ngram;
+                }
+            }
+        }
+        return maxMatching;
+    }
+
+    private boolean ngramContainsAllNeededTokens(Ngram ngram, Multiset<String> wordsSet, int ngramSize) {
+        int matchCount = 0;
+        for (String token : ngram.tokens) {
+            if (wordsSet.contains(token)) {
+                matchCount++;
+            }
+        }
+        return matchCount == ngramSize;
+    }
+
+    /**
+     * В найденном ngram меняем все неиспользуемые в множестве слова на слова из множества
+     * Переделать так чтобы брал не первое слово, а самое подходящее
+     * Пример: сет [книга, играть]
+     * энграм:
+     *
+     * @param ngram
+     * @param initSet
+     * @param leftoverWordsSet
+     */
+    private void replaceFreeOccurances(Ngram ngram, Multiset<String> initSet, Multiset<String> leftoverWordsSet) {
+        if (leftoverWordsSet.size() == 0) {
+            return;
+        }
+        for (int i = 0; i < ngram.tokens.length; i++) {
+            if (!initSet.contains(ngram.tokens[i])) {
+                Iterator<String> wsIterator = leftoverWordsSet.iterator();
+                if (wsIterator.hasNext()) {
+                    ngram.tokens[i] = (wsIterator.next());
+                    wsIterator.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * удаляем из сета использованные слова
+     *
+     * @param ngram
+     * @param wordsSet
+     */
+    private void cleanWordSet(Ngram ngram, Multiset<String> wordsSet) {
+        for (String token : ngram.tokens) {
+            wordsSet.remove(token);
+        }
+    }
+
 }
