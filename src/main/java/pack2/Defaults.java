@@ -10,4 +10,5 @@ public interface Defaults {
     Integer ngramSize = 3;
     Double unknownWordFreq = 0.000364498;
     Integer guessNum = 3;
+    String testFolder = "input1";
 }

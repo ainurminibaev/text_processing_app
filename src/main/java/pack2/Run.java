@@ -12,6 +12,7 @@ import pack2.config.CoreConfig;
 import pack2.model.Data;
 import pack2.repository.DataReader;
 import pack2.service.NgramService;
+import pack2.service.PerplexityService;
 import pack2.service.Replacer;
 import pack2.service.SentenceBuilder;
 
@@ -38,10 +39,39 @@ public class Run {
                 case LEARN: learn(arguments); break;
                 case RESTORE_SENTENCE: restoreSentence(arguments); break;
                 case BUILD_SENTENCE: buildSentence(arguments); break;
-                case REPLACE: replace(arguments);
+                case REPLACE: replace(arguments); break;
+                case PERPLEXITY: perplexity(arguments);
             }
         } else {
             System.out.println("No arguments provided - do nothing!");
+        }
+    }
+
+    private static void perplexity(Arguments arguments) {
+        AnnotationConfigApplicationContext context = getAnnotationConfigApplicationContext();
+        DataReader dataReader = context.getBean(DataReader.class);
+        PerplexityService perplexityService = context.getBean(PerplexityService.class);
+        NgramService ngramService = context.getBean(NgramService.class);
+        try {
+            restoreData(arguments, dataReader);
+            String input = arguments.getArgument("test-dir", Defaults.testFolder);
+            Integer ngramSize = arguments.getArgument("n", Defaults.ngramSize, new Function<String, Integer>() {
+                @Override
+                public Integer apply(String s) {
+                    return Integer.valueOf(s);
+                }
+            });
+            Double notUsedWordsProbability = arguments.getArgument("unknown-word-freq", Defaults.unknownWordFreq, new Function<String, Double>() {
+                @Override
+                public Double apply(String s) {
+                    return Double.valueOf(s);
+                }
+            });
+            logger.info("Learning test data");
+            Data testData = ngramService.buildNgram(input, ngramSize, null, notUsedWordsProbability);
+            logger.info("perplexity: " + perplexityService.calculatePerplexity(dataReader.getData(), testData));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -217,7 +247,8 @@ public class Run {
             LEARN("learn"),
             RESTORE_SENTENCE("restore-sentence"),
             BUILD_SENTENCE("build-sentence"),
-            REPLACE("replace");
+            REPLACE("replace"),
+            PERPLEXITY("perplexity");
 
             private String name;
             Command(String name) {

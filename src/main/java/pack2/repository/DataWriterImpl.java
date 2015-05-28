@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import pack2.Constants;
+import pack2.Util;
 import pack2.model.Data;
 
 import java.io.File;
@@ -23,7 +24,7 @@ public class DataWriterImpl implements DataWriter {
     public boolean writeData(Data data, String pathToFolder) {
         logger.info("Writing Data to folder=" + pathToFolder);
         if (new File(pathToFolder).mkdirs()){
-            String name = pathToFolder + File.separator + Constants.DATA_FILE_NAME + data.ngramSize + Constants.DATA_FILE_EXT;
+            String name = Util.buildFileName(pathToFolder, data.ngramSize);
             try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(name))) {
                 oos.writeObject(data);
                 logger.info("Data successfully saved to " + name);
