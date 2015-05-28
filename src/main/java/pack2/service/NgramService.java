@@ -3,7 +3,6 @@ package pack2.service;
 import pack2.model.Data;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * Created by ainurminibaev on 12.05.15.

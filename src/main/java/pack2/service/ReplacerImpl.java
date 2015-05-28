@@ -210,7 +210,7 @@ public class ReplacerImpl implements Replacer {
      *
      * @return
      */
-    private List<Ngram> buildAllNGrams(String[] words, int skipIndex, int ngramSize) {
+    public List<Ngram> buildAllNGrams(String[] words, int skipIndex, int ngramSize) {
         int startPos = skipIndex - ngramSize + 1;
 
         List<Ngram> ngrams = new ArrayList<>();

@@ -9,13 +9,13 @@ import java.util.*;
 /**
  * Created by giylmi on 21.05.2015.
  */
-public class Data implements Serializable{
+public class Data implements Serializable {
 
 //    public List<String> tokens;
     public Integer ngramSize;
     public LinkedList<Ngram> ngrams;
     public Map<Ngram, LinkedList<Ngram>> nextNgramMap;
-
+    public double probsOfOneOccurrenceNgrams;
     private LinkedList<Ngram> firstNgrams;
 
     public Data(int ngramSize) {
@@ -54,8 +54,9 @@ public class Data implements Serializable{
     }
 
     private double EPS = 1e-10;
+
     private int bsearch(LinkedList<Ngram> ngrams, Ngram key) {
-        int i = -1, j = ngrams.size() -1;
+        int i = -1, j = ngrams.size() - 1;
         if (j == -1) return 0;
         while (i < j - 1) {
             int m = (i + j) / 2;
