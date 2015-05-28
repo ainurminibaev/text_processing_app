@@ -10,4 +10,6 @@ public interface Defaults {
     Integer ngramSize = 3;
     Double unknownWordFreq = 0.000364498;
     Integer guessNum = 3;
+    String REPLACER_ARG = "He asked ? to let";
+    String[] SHUFFLE_TEXT = "when you want to see any thing".split(" ");
 }
