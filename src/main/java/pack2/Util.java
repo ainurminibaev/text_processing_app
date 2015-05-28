@@ -2,6 +2,7 @@ package pack2;
 
 import pack2.model.Ngram;
 
+import java.io.File;
 import java.text.BreakIterator;
 import java.util.HashMap;
 import java.util.List;
@@ -81,6 +82,10 @@ public class Util {
         }
         return str.toString();
 
+    }
+
+    public static String buildFileName(String pathToFolder, int ngramSize){
+        return pathToFolder + File.separator + Constants.DATA_FILE_NAME + ngramSize + Constants.DATA_FILE_EXT;
     }
 
     public static Ngram randomNgram(List<Ngram> ngramList){
