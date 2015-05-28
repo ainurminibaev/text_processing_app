@@ -7,7 +7,7 @@ import pack2.service.NgramService;
 
 import java.io.FileNotFoundException;
 
-import static pack.Constants.*;
+import static pack2.Constants.*;
 
 /**
  * Created by giylmi on 19.05.2015.
@@ -21,10 +21,10 @@ public class Learner {
         String outputFile;
         try {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            modelData = args[1].substring(MODEL_DATA.length());
-            outputFile = args[2].substring(MODEL_DATA_OUT.length());
+            modelData = args[1].substring(MODEL_DATA_PARAM.length());
+            outputFile = args[2].substring(MODEL_DATA_OUT_PARAM.length());
         } catch (Exception e) {
-            ngramSize = NGRAM;
+            ngramSize = DEFAULT_NGRAM_SIZE;
             modelData = "lotr.txt";
             outputFile = "dump.bin";
         }

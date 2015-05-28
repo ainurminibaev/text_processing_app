@@ -9,7 +9,7 @@ import pack2.service.SentenceBuilder;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import static pack.Constants.*;
+import static pack2.Constants.*;
 
 /**
  * Created by giylmi on 18.05.2015.
@@ -22,9 +22,9 @@ public class GenerateSentenceTest {
         String inputFile;
         try {
             ngramSize = Integer.valueOf(args[0].substring(NGRAM_PARAM.length()));
-            inputFile = args[1].substring(MODEL_DATA_IN.length());
+            inputFile = args[1].substring(MODEL_DATA_IN_PARAM.length());
         } catch (Exception e) {
-            ngramSize = NGRAM;
+            ngramSize = DEFAULT_NGRAM_SIZE;
             inputFile = "dump.bin";
         }
         //define context

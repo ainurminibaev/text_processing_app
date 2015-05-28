@@ -8,16 +8,12 @@ import pack2.Constants;
 import pack2.Util;
 import pack2.model.Data;
 import pack2.model.Ngram;
+import pack2.repository.DataReader;
 import pack2.repository.DataWriter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.text.BreakIterator;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Created by giylmi on 22.05.2015.
@@ -26,6 +22,8 @@ import java.util.Locale;
 public class NgramServiceImpl implements NgramService {
     @Autowired
     private DataWriter dataWriter;
+    @Autowired
+    private DataReader dataReader;
 
     @Override
     public String loadFile(String file) throws FileNotFoundException {
@@ -48,7 +46,7 @@ public class NgramServiceImpl implements NgramService {
     }
 
     @Override
-    public void buildNgram(String text, int ngramSize, String filename) {
+    public Data buildNgram(String text, int ngramSize, String filename) {
 //TODO  [\\s,;\\n\\t]+
         Data data = new Data();
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
@@ -57,7 +55,7 @@ public class NgramServiceImpl implements NgramService {
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
         if (words.length < ngramSize) {
-            return;
+            return null;
         }
         int p = 0;
         for (int i = 0; i < words.length - ngramSize + 1; i++) {
@@ -84,7 +82,10 @@ public class NgramServiceImpl implements NgramService {
             }
         }
         System.out.println("All words have been parsed!");
-        dataWriter.writeData(data, new File(filename));
+        if (filename != null) {
+            dataWriter.writeData(data, new File(filename));
+        }
+        return data;
     }
 
     @Override
@@ -135,5 +136,39 @@ public class NgramServiceImpl implements NgramService {
             //избавляемся от всего, кроме букв и запятых
             wordsList.add(i, token);
         }
+    }
+
+    /**
+     * Считаем perplexity(PP) для тестовой модели и тренировочной
+     *
+     * @throws IOException
+     */
+    public double calculatePerplexity(String trainingModelFile, String testTextFile) throws IOException {
+        Data trainingData = dataReader.getData();
+        Iterator<Integer> ngramSizeIterator = trainingData.ngramMap.keySet().iterator();
+        Integer ngramSize = null;
+        if (ngramSizeIterator.hasNext()) {
+            ngramSize = ngramSizeIterator.next();
+        }
+        if (ngramSize == null) {
+            throw new IllegalStateException("No Ngrams");
+        }
+        Data testData = buildNgram(loadFile(testTextFile), ngramSize, null);
+        dataReader.restoreFromStream(new FileInputStream(trainingModelFile));
+        List<Ngram> trainingNgrams = trainingData.ngramMap.get(ngramSize);
+        List<Ngram> testNgrams = testData.ngramMap.get(ngramSize);
+        double perplexity = 0;
+        for (Ngram testNgram : testNgrams) {
+            for (Ngram trainingNgram : trainingNgrams) {
+                if (testNgram.equals(trainingNgram)) {
+                    perplexity = Math.log10(trainingNgram.probability) / Math.log10(2);
+                }
+            }
+        }
+        // Divide with minus of the test corpus size
+        perplexity /= -1 * testNgrams.size();
+        // calculate 2 power the previous result
+        perplexity = Math.pow(2, perplexity);
+        return perplexity;
     }
 }

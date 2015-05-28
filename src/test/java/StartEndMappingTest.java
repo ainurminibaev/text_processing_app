@@ -1,6 +1,6 @@
 import org.junit.Assert;
 import org.junit.Test;
-import pack.Util;
+import pack2.Util;
 
 import java.text.BreakIterator;
 import java.util.Locale;
