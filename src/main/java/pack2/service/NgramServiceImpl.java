@@ -2,17 +2,18 @@ package pack2.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import pack2.Constants;
-import pack2.Util;
 import pack2.model.Data;
 import pack2.model.Ngram;
-import pack2.repository.DataReader;
 import pack2.repository.DataWriter;
+import pack2.repository.TextParser;
 
 import java.io.*;
-import java.text.BreakIterator;
 import java.util.*;
 
 /**
@@ -20,37 +21,24 @@ import java.util.*;
  */
 @Service
 public class NgramServiceImpl implements NgramService {
+
+    Logger logger = LoggerFactory.getLogger(NgramServiceImpl.class);
+
     @Autowired
     private DataWriter dataWriter;
     @Autowired
-    private DataReader dataReader;
+    private TextParser textParser;
 
     @Override
-    public String loadFile(String file) throws FileNotFoundException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line = null;
-            StringBuilder textBuilder = new StringBuilder();
-            BreakIterator sentenceIterator = BreakIterator.getSentenceInstance(Locale.ENGLISH);
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().length() == 0) {
-                    continue;
-                }
-                textBuilder.append(Util.getMarkedLine(line, sentenceIterator));
-                textBuilder.append('\n');
-            }
-            return textBuilder.toString();
-        } catch (Exception ignored) {
-            ignored.printStackTrace();
-        }
-        return "";
-    }
+    public Data buildNgram(String inputFolder, int ngramSize, String outputFolder, double notUsedWordsProbability) throws FileNotFoundException {
+        logger.info("Building Data with size=" + ngramSize + ", from folder=" + inputFolder);
+        String text = textParser.loadFolder(inputFolder);
 
-    @Override
-    public Data buildNgram(String text, int ngramSize, String filename) {
-//TODO  [\\s,;\\n\\t]+
-        Data data = new Data();
+        //TODO  [\\s,;\\n\\t]+
+        logger.info("Building Data from text");
+        Data data = new Data(ngramSize);
         ArrayList<String> wordsList = Lists.newArrayList(text.split("[\\s\\n\\t]+"));
-        cleanWordSetFromTrunk(wordsList);
+        cleanWordSetFromTrunk(wordsList, notUsedWordsProbability);
         String[] words = new String[wordsList.size()];
         wordsList.toArray(words);
         HashSet<String> wordsSet = Sets.newHashSet(words);
@@ -72,25 +60,32 @@ public class NgramServiceImpl implements NgramService {
             }
             if (canBeNgram) {
                 ngram.fillTokens(tokens);
-                ngram.probability = calculateNgramProvability(ngram, words, wordsSet.size());
+                ngram.probability = calculateNgramProbability(ngram, words, wordsSet.size());
                 data.addNgram(ngram);
             }
 
             if (i * 100.0 / words.length - p > 10) {
-                System.out.println(i * 100.0 / words.length + " words have been parsed");
+                logger.info((int) (i * 100.0 / words.length) + "% words have been parsed");
                 p = (int) (i * 100.0 / words.length);
             }
         }
-        System.out.println("All words have been parsed!");
-        if (filename != null) {
-            dataWriter.writeData(data, new File(filename));
+        logger.info("All words have been parsed!");
+        if (outputFolder != null) {
+            dataWriter.writeData(data, outputFolder);
         }
         return data;
     }
 
     @Override
+    @Cacheable(value = "cache", cacheManager = "cacheManager")
     public int getCountOfSubString(String left, String right, String[] words) {
-        return 0;
+        int count = 0;
+        for (int i = 0; i < words.length - 1; i++) {
+            if (left.equals(words[i]) && (right == null || right.equals(words[i + 1]))) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -99,7 +94,7 @@ public class NgramServiceImpl implements NgramService {
      *
      * @return
      */
-    private Double calculateNgramProvability(Ngram ngram, String[] words, int wordSetSize) {
+    private Double calculateNgramProbability(Ngram ngram, String[] words, int wordSetSize) {
         double totalProbab = 1;
         for (int i = 0; i < ngram.tokens.length - 1; i++) {
             String[] tokens = ngram.tokens;
@@ -108,6 +103,7 @@ public class NgramServiceImpl implements NgramService {
         return totalProbab;
     }
 
+    @Cacheable(value = "cache", cacheManager = "cacheManager")
     private Double getProbabilityForPair(String left, String right, String[] words, int wordSetSize) {
         return (getCountOfSubString(left, right, words) + 1) / ((double) getCountOfSubString(left, null, words) + wordSetSize);
     }
@@ -118,14 +114,27 @@ public class NgramServiceImpl implements NgramService {
      *
      * @param wordsList
      */
-    private void cleanWordSetFromTrunk(ArrayList<String> wordsList) {
+    private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
+    //для начала нужно иметь эти данные для "сырых" строк
+        String[] wordsArray = wordsList.toArray(new String[wordsList.size()]);
+        HashSet<String> wordsSet = Sets.newHashSet(wordsArray);
+        double min = Double.MAX_VALUE;
+        String minToken = null;
         for (int i = 0; i < wordsList.size(); i++) {
             String token = wordsList.get(i);
             //пропускаем признаки старта и конца
             if (token.equals(Constants.END_TOKEN) || token.equals(Constants.START_TOKEN)) {
                 continue;
             }
-            //удаляем старое слово, чтобы слова вставить
+            Double wordProbability = getCountOfSubString(token, null, wordsArray) / (double) wordsSet.size();
+            if (wordProbability < uselessWordsProbability) {
+                token = Constants.UNKNOWN_WORD_MARKER;
+            }
+            if (wordProbability < min && wordProbability != 0) {
+                min = wordProbability;
+                minToken = token;
+            }
+            //удаляем старое слово, чтобы вставить очищенное
             wordsList.remove(i);
             token = token.replaceAll("[^\\w,]", "");
             if (token.trim().length() == 0) {
@@ -136,41 +145,9 @@ public class NgramServiceImpl implements NgramService {
             //избавляемся от всего, кроме букв и запятых
             wordsList.add(i, token);
         }
+        logger.info("min");
+        logger.info("%s —- %.9f \n", minToken, min);
     }
 
-    /**
-     * Считаем perplexity(PP) для тестовой модели и тренировочной
-     *
-     * @throws IOException
-     */
-    public double calculatePerplexity(String testTextFile) throws IOException {
-        Data trainingData = dataReader.getData();
-        Iterator<Integer> ngramSizeIterator = trainingData.ngramMap.keySet().iterator();
-        Integer ngramSize = null;
-        if (ngramSizeIterator.hasNext()) {
-            ngramSize = ngramSizeIterator.next();
-        }
-        if (ngramSize == null) {
-            throw new IllegalStateException("No Ngrams");
-        }
-        System.out.println("Reading data from test model: START");
-        Data testData = buildNgram(loadFile(testTextFile), ngramSize, null);
-        List<Ngram> trainingNgrams = trainingData.ngramMap.get(ngramSize);
-        List<Ngram> testNgrams = testData.ngramMap.get(ngramSize);
-        System.out.println("Reading data from test model: END");
-        System.out.println("Calculating perplexity");
-        double perplexity = 0;
-        for (Ngram testNgram : testNgrams) {
-            for (Ngram trainingNgram : trainingNgrams) {
-                if (testNgram.equals(trainingNgram)) {
-                    perplexity += testNgram.probability * Math.log10(trainingNgram.probability);
-                }
-            }
-        }
-//        // Divide with minus of the test corpus size
-//        perplexity /= -1 * testNgrams.size();
-//        // calculate 2 power the previous result
-//        perplexity = Math.pow(2, perplexity);
-        return perplexity;
-    }
+
 }

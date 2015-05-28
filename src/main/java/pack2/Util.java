@@ -1,7 +1,10 @@
 package pack2;
 
+import pack2.model.Ngram;
+
 import java.text.BreakIterator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -78,5 +81,29 @@ public class Util {
         }
         return str.toString();
 
+    }
+
+    public static Ngram randomNgram(List<Ngram> ngramList){
+        Random randomer = new Random();
+        double total = totalPropability(ngramList);
+        double probability = randomer.nextDouble() % total;
+        double sum = 0;
+        for (Ngram ngram : ngramList) {
+            if (probability < sum + ngram.probability) {
+                return ngram;
+            } else {
+                sum += ngram.probability;
+            }
+        }
+        return null;
+    }
+
+    private static double totalPropability(List<Ngram> nextNgrams) {
+        if (nextNgrams == null) return 0;
+        double sum = 0;
+        for (Ngram ngram : nextNgrams) {
+            sum += ngram.probability;
+        }
+        return sum;
     }
 }

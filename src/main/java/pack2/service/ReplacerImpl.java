@@ -1,8 +1,11 @@
 package pack2.service;
 
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pack2.model.Data;
 import pack2.model.Ngram;
 import pack2.model.NgramsCortege;
 import pack2.repository.DataReader;
@@ -17,24 +20,27 @@ import java.util.regex.Pattern;
 @Service
 public class ReplacerImpl implements Replacer {
 
+    Logger logger = LoggerFactory.getLogger(ReplacerImpl.class);
+
     @Autowired
     DataReader dataReader;
 
     @Override
-    public String replace(String initialSentence, int guessNum, int ngramSize) {
-        System.out.println(initialSentence);
+    public String replace(String initialSentence, int guessNum) {
+        Data data = dataReader.getData();
+        logger.info("initialSequence: " + initialSentence);
         String[] words = initialSentence.split("\\s");
         for (int i = 0; i < words.length; i++) {
             if (words[i].equals("?")) {
-                List<Ngram> ngrams = buildAllNGrams(words, i, ngramSize);
-                List<Ngram> bestNgrams = findBestMatchedNgram(ngrams, ngramSize);
+                List<Ngram> ngrams = buildAllNGrams(words, i, data.ngramSize);
+                List<Ngram> bestNgrams = findBestMatchedNgram(ngrams);
 
                 Set<Ngram> bestSet = new HashSet<>(bestNgrams);
                 bestNgrams = Lists.newArrayList(bestSet);
                 sortNgrams(bestNgrams);
 
-                List<NgramsCortege> ngramsCorteges = getBOBM(bestNgrams, createRegexes(words, i, ngramSize));
-                System.out.println("variants:");
+                List<NgramsCortege> ngramsCorteges = getBOBM(bestNgrams, createRegexes(words, i, data.ngramSize));
+                logger.info("variants:");
                 if (ngramsCorteges != null && ngramsCorteges.size() != 0) {
                     sortNgramsCortages(ngramsCorteges);
                     for (NgramsCortege nc : ngramsCorteges) {
@@ -42,7 +48,7 @@ public class ReplacerImpl implements Replacer {
                             break;
                         }
                         guessNum--;
-                        System.out.println(printNgramCortege(nc, words, i));
+                        logger.info(printNgramCortege(nc, words, i));
                     }
                 }
             }
@@ -175,8 +181,8 @@ public class ReplacerImpl implements Replacer {
         }));
     }
 
-    private List<Ngram> findBestMatchedNgram(List<Ngram> skippedNgrams, int ngramSize) {
-        List<Ngram> ngramsBySize = dataReader.getData().ngramMap.get(ngramSize);
+    private List<Ngram> findBestMatchedNgram(List<Ngram> skippedNgrams) {
+        List<Ngram> ngramsBySize = dataReader.getData().ngrams;
         List<Ngram> matchedNgrams = new ArrayList<>();
         for (Ngram ngram : ngramsBySize) {
             for (Ngram skippedNgram : skippedNgrams) {

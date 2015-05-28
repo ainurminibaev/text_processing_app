@@ -5,7 +5,7 @@ package pack2.service;
  */
 public interface SentenceBuilder {
 
-    String buildSentence(int ngramSize);
+    String buildSentence();
 
-    String buildSentence(String[] words, int ngramSize);
+    String buildSentence(String[] words);
 }

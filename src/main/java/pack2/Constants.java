@@ -19,4 +19,6 @@ public interface Constants {
 
     Integer DEFAULT_NGRAM_SIZE = 3;
 
+    String DATA_FILE_NAME = "data";
+    String DATA_FILE_EXT = ".bin";
 }
