@@ -74,14 +74,16 @@ public class NgramServiceImpl implements NgramService {
             }
         }
         logger.info("All words have been parsed!");
-        if (outputFolder != null) {
-            dataWriter.writeData(data, outputFolder);
-        }
-        System.out.println("All words have been parsed!");
+        data.sortNextNgrams();
         if (enableGoodTuring) {
             System.out.println("GT Smoothing");
             goodTuringSmoothing(data);
         }
+        if (outputFolder != null) {
+            dataWriter.writeData(data, outputFolder);
+        }
+        System.out.println("All words have been parsed!");
+
         return data;
     }
 
@@ -108,13 +110,14 @@ public class NgramServiceImpl implements NgramService {
     @Override
     @Cacheable(value = "cache", cacheManager = "cacheManager")
     public int getCountOfSubString(String left, String right, String[] words) {
-        int count = 0;
-        for (int i = 0; i < words.length - 1; i++) {
-            if (left.equals(words[i]) && (right == null || right.equals(words[i + 1]))) {
-                count++;
-            }
-        }
-        return count;
+//        int count = 0;
+//        for (int i = 0; i < words.length - 1; i++) {
+//            if (left.equals(words[i]) && (right == null || right.equals(words[i + 1]))) {
+//                count++;
+//            }
+//        }
+//        return count;
+        return 0;
     }
 
 
@@ -147,6 +150,7 @@ public class NgramServiceImpl implements NgramService {
      */
     private void cleanWordSetFromTrunk(ArrayList<String> wordsList, double uselessWordsProbability) {
         //для начала нужно иметь эти данные для "сырых" строк
+        logger.info("cleaning word set");
         String[] wordsArray = wordsList.toArray(new String[wordsList.size()]);
         HashSet<String> wordsSet = Sets.newHashSet(wordsArray);
         double min = Double.MAX_VALUE;
@@ -176,8 +180,7 @@ public class NgramServiceImpl implements NgramService {
             //избавляемся от всего, кроме букв и запятых
             wordsList.add(i, token);
         }
-        logger.info("min");
-        logger.info("%s —- %.9f \n", minToken, min);
+        logger.info("cleaning word set ended");
     }
 
 

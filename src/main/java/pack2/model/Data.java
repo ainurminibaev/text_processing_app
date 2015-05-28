@@ -38,7 +38,7 @@ public class Data implements Serializable {
 
     private void addToFirstNgramsMap(Ngram ngram) {
         if (ngram.tokens[0].equals(Constants.START_TOKEN)) {
-            ngrams.add(bsearch(ngrams, ngram), ngram);
+            firstNgrams.add(ngram);
         }
     }
 
@@ -46,31 +46,27 @@ public class Data implements Serializable {
         Ngram excludeLast = ngram.excludeLastTokenNgram();
         LinkedList<Ngram> ngrams = nextNgramMap.get(excludeLast);
         if (ngrams == null) nextNgramMap.put(excludeLast, ngrams = new LinkedList<Ngram>());
-        ngrams.add(bsearch(ngrams, ngram), ngram);
+        ngrams.add(ngram);
     }
 
     private void addToNgramMap(Ngram ngram) {
         ngrams.add(ngram);
     }
 
-    private double EPS = 1e-10;
-
-    private int bsearch(LinkedList<Ngram> ngrams, Ngram key) {
-        int i = -1, j = ngrams.size() - 1;
-        if (j == -1) return 0;
-        while (i < j - 1) {
-            int m = (i + j) / 2;
-            Ngram ngram = ngrams.get(m);
-            if (Math.abs(ngram.probability - key.probability) <= EPS) return m;
-            if ((ngram.probability - key.probability) > EPS) {
-                i = m;
-            } else {
-                j = m;
-            }
+    public void sortNextNgrams() {
+        for (LinkedList list: nextNgramMap.values()) {
+            Collections.sort(list, new Comparator<Ngram>() {
+                @Override
+                public int compare(Ngram o1, Ngram o2) {
+                    return ((Double)o2.probability).compareTo(o2.probability);
+                }
+            });
         }
-        Ngram ngram = ngrams.get(j);
-        if ((key.probability - ngram.probability) > EPS)
-            return j;
-        return j + 1;
+        Collections.sort(firstNgrams, new Comparator<Ngram>() {
+            @Override
+            public int compare(Ngram o1, Ngram o2) {
+                return ((Double)o2.probability).compareTo(o2.probability);
+            }
+        });
     }
 }

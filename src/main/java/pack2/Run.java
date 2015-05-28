@@ -228,7 +228,7 @@ public class Run {
                     j++;
                 }
                 if (j > - 1) {
-                    String argument = args[i].substring(j);
+                    String argument = args[i].substring(j + 1);
                     String[] keyValuePair = argument.split("=");
                     String key = keyValuePair[0];
                     StringBuilder valueBuilder = new StringBuilder();
