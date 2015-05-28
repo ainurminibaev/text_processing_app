@@ -1,11 +1,11 @@
 package pack2;
 
-import pack.Constants;
-
 import java.text.BreakIterator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
+import static pack2.Constants.*;
 
 /**
  * Created by ainurminibaev on 12.05.15.
@@ -62,10 +62,10 @@ public class Util {
             if (insertMap.containsKey(i)) {
                 Boolean isStart = insertMap.get(i);
                 if (!isFirstOccurance || (insertMap.size() != 1 && !isFirstOccurance)) {
-                    str.append(pack.Constants.START_END_FLAG);
+                    str.append(START_END_TOKEN);
                 } else {
                     str.append(' ');
-                    str.append(isStart ? pack.Constants.START_FLAG : pack.Constants.END_FLAG);
+                    str.append(isStart ? START_TOKEN : END_TOKEN);
                     str.append(' ');
                 }
                 isFirstOccurance = false;
@@ -74,7 +74,7 @@ public class Util {
             str.append(line.charAt(i));
         }
         for (Map.Entry<Integer, Boolean> e : insertMap.entrySet()) {
-            str.append(e.getValue() ? pack.Constants.START_FLAG : Constants.END_FLAG);
+            str.append(e.getValue() ? START_TOKEN : END_TOKEN);
         }
         return str.toString();
 

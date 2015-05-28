@@ -3,12 +3,15 @@ package pack2;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import pack2.config.CachingConfig;
 import pack2.config.CoreConfig;
+import pack2.repository.DataReader;
 import pack2.service.Replacer;
 import pack2.service.SentenceBuilder;
 
-import static pack2.Constants.GUESS_NUM_PARAM;
+import java.io.FileInputStream;
+import java.io.IOException;
 
-import java.io.FileNotFoundException;
+import static pack2.Constants.DEFAULT_NGRAM_SIZE;
+import static pack2.Constants.GUESS_NUM_PARAM;
 
 /**
  * Created by ainurminibaev on 12.05.15.
@@ -16,7 +19,7 @@ import java.io.FileNotFoundException;
 public class Main {
 
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         int guessNum;
         String inputWords;
         String replacerText;
@@ -30,12 +33,15 @@ public class Main {
             guessNum = 4;
             inputWords = "when you want to see any thing";
             replacerText = "He asked ? to let";
-            ngramSize = 3;
+            ngramSize = DEFAULT_NGRAM_SIZE;
         }
 
         //define context
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
+        DataReader dataReader = context.getBean(DataReader.class);
         SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
+
+        dataReader.restoreFromStream(new FileInputStream("dump.bin"));
 
         String[] words = inputWords.split("\\s");
         Util.shuffleArray(words);

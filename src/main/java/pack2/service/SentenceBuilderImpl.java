@@ -6,9 +6,8 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pack.model.Token;
-import pack2.model.Ngram;
 import pack2.model.Data;
+import pack2.model.Ngram;
 import pack2.repository.DataReader;
 
 import java.util.*;
