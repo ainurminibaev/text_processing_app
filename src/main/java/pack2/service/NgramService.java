@@ -11,6 +11,7 @@ import java.net.URL;
  */
 public interface NgramService {
 
+    Data buildNgram(String inputFolder, int ngramSize, String outputFolder, double notUsedWordsProbability) throws FileNotFoundException;
 
     String load(String file) throws FileNotFoundException;
 
@@ -20,5 +21,4 @@ public interface NgramService {
 
     int getCountOfSubString(String left, String right, String[] words);
 
-    double calculatePerplexity(String trainingModelFile, String testTextFile) throws IOException;
 }

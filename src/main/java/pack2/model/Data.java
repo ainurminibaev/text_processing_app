@@ -1,6 +1,7 @@
 package pack2.model;
 
 import pack2.Constants;
+import pack2.Util;
 
 import java.io.Serializable;
 import java.util.*;
@@ -10,42 +11,46 @@ import java.util.*;
  */
 public class Data implements Serializable {
 
-    //    public List<String> tokens;
-    public Map<Integer, List<Ngram>> ngramMap;
-    public Map<Integer, Map<Ngram, LinkedList<Ngram>>> nextNgramMapMap;
+//    public List<String> tokens;
+    public Integer ngramSize;
+    public LinkedList<Ngram> ngrams;
+    public Map<Ngram, LinkedList<Ngram>> nextNgramMap;
     public double probsOfOneOccurrenceNgrams;
+    private LinkedList<Ngram> firstNgrams;
 
-    private transient List<Ngram> firstNgrams;
-
-    public Data() {
+    public Data(int ngramSize) {
 //        tokens = new ArrayList<>();
-        ngramMap = new HashMap<>();
-        nextNgramMapMap = new HashMap<>();
+        this.ngramSize = ngramSize;
+        ngrams = new LinkedList<>();
+        nextNgramMap = new HashMap<>();
+        firstNgrams = new LinkedList<>();
     }
 
-    public Ngram getFirstNgram(int ngramSize) {
-        Random random = new Random();
-        if (firstNgrams != null) return firstNgrams.get(random.nextInt() % firstNgrams.size());
-        firstNgrams = new ArrayList<>();
-        List<Ngram> ngrams = ngramMap.get(ngramSize);
-        for (Ngram ngram : ngrams) {
-            if (ngram.tokens[0].equals(Constants.START_TOKEN))
-                firstNgrams.add(ngram);
-        }
-        Collections.shuffle(firstNgrams);
-        return firstNgrams.get(0);
+    public Ngram getFirstNgram() {
+        return Util.randomNgram(firstNgrams);
     }
 
     public void addNgram(Ngram ngram) {
-        if (ngramMap.get(ngram.size) == null) ngramMap.put(ngram.size, new LinkedList<Ngram>());
-        ngramMap.get(ngram.size).add(ngram);
-        if (nextNgramMapMap.get(ngram.size) == null)
-            nextNgramMapMap.put(ngram.size, new HashMap<Ngram, LinkedList<Ngram>>());
-        Map<Ngram, LinkedList<Ngram>> nextNgramsMap = nextNgramMapMap.get(ngram.size);
+        addToNgramMap(ngram);
+        addToNextNgramsMap(ngram);
+        addToFirstNgramsMap(ngram);
+    }
+
+    private void addToFirstNgramsMap(Ngram ngram) {
+        if (ngram.tokens[0].equals(Constants.START_TOKEN)) {
+            ngrams.add(bsearch(ngrams, ngram), ngram);
+        }
+    }
+
+    private void addToNextNgramsMap(Ngram ngram) {
         Ngram excludeLast = ngram.excludeLastTokenNgram();
-        LinkedList<Ngram> ngrams = nextNgramsMap.get(excludeLast);
-        if (ngrams == null) nextNgramsMap.put(excludeLast, ngrams = new LinkedList<Ngram>());
+        LinkedList<Ngram> ngrams = nextNgramMap.get(excludeLast);
+        if (ngrams == null) nextNgramMap.put(excludeLast, ngrams = new LinkedList<Ngram>());
         ngrams.add(bsearch(ngrams, ngram), ngram);
+    }
+
+    private void addToNgramMap(Ngram ngram) {
+        ngrams.add(ngram);
     }
 
     private double EPS = 1e-10;

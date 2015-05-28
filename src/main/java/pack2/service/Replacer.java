@@ -9,7 +9,8 @@ import java.util.List;
  */
 public interface Replacer {
 
-    String replace(String initialSequence, int guessNum, int ngramSize);
+    String replace(String initialSequence, int guessNum);
+
 
     List<Ngram> buildAllNGrams(String[] words, int skipIndex, int ngramSize);
 }

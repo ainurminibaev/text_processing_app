@@ -9,7 +9,7 @@ import java.io.File;
  */
 public interface DataWriter {
 
-    boolean writeData(Data data, File file);
+    boolean writeData(Data data, String pathToFolder);
 
 
 }

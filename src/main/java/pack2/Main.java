@@ -19,41 +19,41 @@ import static pack2.Constants.GUESS_NUM_PARAM;
 public class Main {
 
 
-    public static void main(String[] args) throws IOException {
-        int guessNum;
-        String inputWords;
-        String replacerText;
-        Integer ngramSize;
-        try {
-            inputWords = args[0];
-            replacerText = args[1];
-            guessNum = Integer.valueOf(args[2].substring(GUESS_NUM_PARAM.length()));
-            ngramSize = Integer.valueOf(args[3]);
-        } catch (Exception e) {
-            guessNum = 4;
-            inputWords = "when you want to see any thing";
-            replacerText = "He asked ? to let";
-            ngramSize = DEFAULT_NGRAM_SIZE;
-        }
-
-        //define context
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
-        DataReader dataReader = context.getBean(DataReader.class);
-        SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
-
-        dataReader.restoreFromStream(new FileInputStream("dump.bin"));
-
-        String[] words = inputWords.split("\\s");
-        Util.shuffleArray(words);
-        for (int i = 0; i < words.length; i++) {
-            String word = words[i];
-            System.out.print(word + " ");
-        }
-        System.out.println();
-        String sentence = sentenceBuilder.buildSentence(words, ngramSize);
-        System.out.println(sentence);
-
-        Replacer replacer = context.getBean(Replacer.class);
-        replacer.replace(replacerText, guessNum, ngramSize);
-    }
+//    public static void main(String[] args) throws IOException {
+//        int guessNum;
+//        String inputWords;
+//        String replacerText;
+//        Integer ngramSize;
+//        try {
+//            inputWords = args[0];
+//            replacerText = args[1];
+//            guessNum = Integer.valueOf(args[2].substring(GUESS_NUM_PARAM.length()));
+//            ngramSize = Integer.valueOf(args[3]);
+//        } catch (Exception e) {
+//            guessNum = 4;
+//            inputWords = "when you want to see any thing";
+//            replacerText = "He asked ? to let";
+//            ngramSize = DEFAULT_NGRAM_SIZE;
+//        }
+//
+//        //define context
+//        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CoreConfig.class, CachingConfig.class);
+//        DataReader dataReader = context.getBean(DataReader.class);
+//        SentenceBuilder sentenceBuilder = context.getBean(SentenceBuilder.class);
+//
+//        dataReader.restoreFromStream(new FileInputStream("dump.bin"));
+//
+//        String[] words = inputWords.split("\\s");
+//        Util.shuffleArray(words);
+//        for (int i = 0; i < words.length; i++) {
+//            String word = words[i];
+//            System.out.print(word + " ");
+//        }
+//        System.out.println();
+//        String sentence = sentenceBuilder.buildSentence(words, ngramSize);
+//        System.out.println(sentence);
+//
+//        Replacer replacer = context.getBean(Replacer.class);
+//        replacer.replace(replacerText, guessNum, ngramSize);
+//    }
 }

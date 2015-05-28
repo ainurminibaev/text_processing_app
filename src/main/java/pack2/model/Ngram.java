@@ -29,9 +29,7 @@ public class Ngram implements Serializable{
         } else if (tokens.length < size) {
             throw new RuntimeException("ERROR: TOO FEW TOKENS TO FILL");
         }
-        for (int i = 0; i < size; i++){
-            this.tokens[i] = tokens[i];
-        }
+        this.tokens = tokens;
     }
 
     public Ngram excludeFirstTokenNgram() {
